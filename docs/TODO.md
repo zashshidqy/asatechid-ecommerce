@@ -96,13 +96,77 @@ Catatan Phase 1:
 - Estimasi waktu baca memakai 200 kata/menit atas teks blok, bukan pengukuran nyata.
 - “Diperbarui” hanya tampil bila `updatedAt` jatuh pada hari kalender yang berbeda dari `publishedAt`, agar penyuntingan rutin di hari yang sama tidak menjadi noise.
 - Tautan preview tetap valid sampai kedaluwarsa meskipun artikel sudah dipublikasikan (perilaku bawaan EmDash).
-- Arsip kategori/tag belum masuk sitemap; keputusan indexing-nya masuk Phase 4 (SEO foundation).
+- Arsip kategori/tag belum masuk sitemap; keputusan dan alasannya dicatat pada catatan Phase 4.
 - Belum ada RSS feed, komentar, atau widget sidebar; tidak termasuk lingkup Phase 3.
 - Locale default CMS masih `en` meskipun konten Indonesia; perubahan locale memerlukan migrasi konten (open item).
 - **Data DEMO:** 3 artikel + 1 byline DEMO masih ada di seed dan database; harus diganti/dihapus sebelum publikasi.
 
-## Phase 4 — SEO foundation  ⬜
-## Phase 5 — SEO Review UI  ⬜
+## Phase 4 — SEO foundation  ✅ SELESAI
+
+- [x] Head metadata tetap memakai `getSeoMeta()` + `EmDashHead` (satu sumber, tanpa duplikasi `<title>`/description/canonical).
+- [x] Canonical untuk **semua** route indexable, memakai origin publik terkonfigurasi dan membuang query string.
+- [x] Halaman `noindex` (404, 500, preview, entri dengan SEO `noIndex`) tidak mengeluarkan canonical.
+- [x] Open Graph: `og:type=article` + `article:published_time`/`article:modified_time`/`article:author` untuk artikel; `og:image` absolut untuk semua halaman.
+- [x] JSON-LD `BlogPosting` untuk artikel (headline, description, image, URL, tanggal, penulis, publisher) dan `WebSite` untuk halaman non-artikel.
+- [x] Gambar sosial default `public/og-default-demo.png` (1200×630, ditandai DEMO) sebagai fallback; site setting `seo.defaultOgImage` tetap menang bila diisi admin.
+- [x] Site URL publik dibaca dari `EMDASH_SITE_URL`/`SITE_URL` (runtime `process.env`) → config → origin request, konsisten untuk canonical, sitemap, robots, dan OG.
+- [x] `robots.txt` bawaan EmDash: allow publik, disallow `/_emdash/`, `Sitemap:` memakai origin terkonfigurasi.
+- [x] Sitemap otomatis hanya memuat entri terbit dan tidak `noIndex`; draft dan entri uji tidak muncul.
+- [x] Redirect bawaan EmDash diuji lewat seed: `/posts/welcome` → `/posts` (301).
+- [x] SEO panel EmDash diuji: title/description/canonical/noIndex dari panel menimpa default dan konsisten di `<head>`, serta `noIndex` mengeluarkan entri dari sitemap.
+- [x] `npm run typecheck` 0 error, `npm run build` sukses, build produksi diuji dengan `EMDASH_SITE_URL` berbeda dari origin request.
+
+### Verifikasi acceptance Phase 4
+- Tidak ada duplikasi: tepat 1 `<title>`, 1 `meta[name=description]`, 1 `link[rel=canonical]`, 1 `og:title`, dan 1 `og:image` per halaman yang diperiksa.
+- `/`, `/posts`, `/products`, arsip kategori/tag, dan halaman konten → canonical absolut; `/posts?ref=abc` → canonical `.../posts`.
+- 404 → `noindex, nofollow` tanpa canonical; preview draft → `noindex, nofollow`, tanpa canonical, banner pratinjau tetap tampil; draft tanpa token → 404.
+- Artikel → `og:type=article`, `twitter:card=summary_large_image`, JSON-LD `BlogPosting`; headline/description/image/url/datePublished/dateModified/author/publisher terisi.
+- Entri uji dengan SEO panel `noIndex=true` → `noindex` + tanpa canonical + **tidak** ada di `/sitemap-posts.xml`; setelah `noIndex=false` dan canonical eksplisit → canonical mengikuti nilai panel dan entri kembali ke sitemap. Entri uji dihapus permanen.
+- Produksi di port 4322 dengan `EMDASH_SITE_URL=http://localhost:4321`: canonical, `og:image`, JSON-LD, `robots.txt`, dan seluruh sitemap memakai `http://localhost:4321`, bukan origin request.
+- `/og-default-demo.png` → 200 `image/png`; `/products/produk-demo-draf` → 404 dan absen dari sitemap; `/about` ada di `sitemap-pages.xml`.
+
+### Catatan/limitasi Phase 4
+- **Product/Offer JSON-LD belum dirender** karena belum ada harga, mata uang, atau ketersediaan valid (ADR-019). Halaman produk saat ini memakai JSON-LD `WebSite` bawaan EmDash untuk halaman non-artikel; ini akan diganti saat data penawaran tersedia.
+- Sitemap bawaan EmDash hanya mengenumerasi collection, sehingga arsip `/category/*` dan `/tag/*` belum masuk sitemap meskipun indexable dan punya canonical. Keputusan: dibiarkan sampai Phase 7 (route audit) atau sampai ada plugin sitemap; jangan menambah daftar manual yang mudah basi.
+- Halaman hasil pagination (`?cursor=`) dikanonikalkan ke halaman pertama; halaman kedua dan seterusnya tidak diindeks. Ini disengaja untuk menghindari duplikasi.
+- Gambar sosial default adalah placeholder DEMO; ganti melalui Site Settings (`seo.defaultOgImage`) atau ganti `public/og-default-demo.png` sebelum publikasi.
+- Verifikasi Google Search Console / Bing belum bisa dilakukan karena kode verifikasi dan domain belum tersedia.
+- `EMDASH_SITE_URL` **wajib** diisi di produksi. Tanpa itu canonical/OG/sitemap mengikuti origin request, yang bisa salah di balik reverse proxy.
+- Redirect masih berupa satu aturan DEMO di seed; aturan produksi harus ditambahkan lewat admin/seed saat URL lama diketahui.
+
+## Phase 5 — SEO Review UI  ✅ SELESAI
+
+- [x] Panel editor native EmDash (`seo-review`) untuk koleksi `posts`, `products`, dan `pages`, terdaftar lewat `admin.editorPanels` di `astro.config.mjs`.
+- [x] Pratinjau SERP desktop dan mobile (simulasi, diberi label) memakai judul, URL tampilan, dan deskripsi final.
+- [x] Audit checks: judul/deskripsi ada, panjang judul/deskripsi (saran), heading H2/H3, H1 di konten, urutan heading, konten kosong, konten tipis, tautan internal, tautan lokal rusak, gambar tanpa alt, alt gambar utama, gambar sosial (termasuk peringatan placeholder DEMO), konsistensi canonical, info noindex, nama situs berulang.
+- [x] Skor dengan rincian bobot (wajib 25, peringatan 8, saran 2, info 0) dan label eksplisit “panduan internal, bukan prediksi peringkat Google”.
+- [x] Publish gate `content:beforePublish` memblokir **hanya** temuan wajib: judul kosong, konten utama kosong, slug kosong. Peringatan/saran tidak memblokir.
+- [x] Panel membaca **revisi draf terakhir yang tersimpan** (baris live + revisi draf + `_slug` terstaging), bukan hanya baris terbit.
+- [x] Audit engine murni + adapter yang meniru `getSeoMeta()` dan fallback `Base.astro`, sehingga pratinjau konsisten dengan output publik.
+- [x] Unit test engine audit (21 test) memakai `node --experimental-strip-types --test` tanpa menambah Vitest/tsx.
+- [x] Aksi panel “Periksa ulang” memuat ulang blok dan mengembalikan toast.
+- [x] `npm run typecheck` 0 error/0 warning/0 hint (42 file), `npm test` 21/21 lulus, `npm run build` sukses, `npx emdash doctor` semua cek lulus.
+
+### Verifikasi acceptance Phase 5
+- Manifest dev dan build produksi menampilkan plugin `seo-review` dengan `enabled: true`, `adminMode: "blocks"`, dan editor panel untuk `posts`/`products`/`pages`.
+- Panel berhasil dibuka untuk entri `posts`, `products` (termasuk produk draf), dan `pages`.
+- **Data draf:** draf tersimpan dengan konten kosong membuat panel menampilkan “Publikasi akan diblokir” / “Konten utama kosong”, sementara halaman publik tetap menyajikan konten terbit. `POST .../publish` mengembalikan `PUBLISH_REJECTED` dengan alasan gate. Draf kemudian dibuang (`discard-draft`).
+- Entri uji valid berhasil dipublikasikan lewat API, lalu di-trash dan dihapus permanen; route publik kembali **404**.
+- Aksi `block_action` `refresh` mengembalikan toast “Pemeriksaan diperbarui.” dan blok yang dirender ulang.
+- **Konsistensi output:** setelah SEO override diisi, judul, deskripsi, dan canonical pada panel sama persis dengan `<head>` halaman publik; override dikembalikan.
+- **noindex:** halaman publik mengeluarkan `noindex` tanpa canonical; panel menampilkan “Halaman noindex” dan **tidak** menampilkan “Canonical kosong”.
+- Build produksi di port 4322 dengan `EMDASH_SITE_URL=http://localhost:4321` menyajikan manifest dan panel; canonical panel sama dengan halaman publik.
+
+### Catatan/limitasi Phase 5
+- Panel hanya mengaudit **revisi draf terakhir yang tersimpan**. Ketikan yang belum disimpan di editor tidak terlihat; ini disebutkan di dalam panel.
+- Pemeriksaan tautan lokal rusak hanya berjalan di panel (memakai daftar path terbit); publish hook melewatinya agar publikasi tetap cepat.
+- Gate hanya memblokir tiga masalah wajib. Kualitas editorial lain (deskripsi kosong, alt gambar, konten tipis, dsb.) tetap berupa peringatan/saran.
+- Skor adalah panduan internal dengan bobot tetap, bukan prediksi peringkat Google dan bukan audit teknis menyeluruh (Core Web Vitals, crawlability, dsb.).
+- Pratinjau SERP adalah simulasi dengan pemotongan karakter tetap; tampilan Google berbeda per perangkat dan waktu.
+- Plugin memakai `@emdash-cms/blocks` (dependency baru) untuk Block Kit; bundle admin tetap memicu warning chunk > 500 kB (sudah ada sejak Phase 0, bukan halaman publik).
+- Locale CMS masih `en`; audit memakai teks Indonesia tetapi tidak mengubah locale konten.
+- `docs/02-ARCHITECTURE.md` dan dokumen `04`–`10`, `12`–`17` masih belum tersedia.
+
 ## Phase 6 — Inquiry MVP  ⬜
 ## Phase 7 — Launch hardening  ⬜
 ## Phase 8 — Full checkout (conditional)  ⬜

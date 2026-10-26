@@ -5,8 +5,17 @@ import { createPublicPageContext } from "emdash/page";
 import SiteHeader from "../components/SiteHeader.astro";
 import SiteFooter from "../components/SiteFooter.astro";
 import { resolveStarterSiteIdentity } from "../utils/site-identity";
+import { absoluteSiteUrl, resolveSiteOrigin } from "../utils/site-url";
 import "../styles/tokens.css";
 import "../styles/global.css";
+
+type PageType = "website" | "article";
+
+interface ArticleMeta {
+	publishedTime?: string | null;
+	modifiedTime?: string | null;
+	author?: string | null;
+}
 
 interface Props {
 	title: string;
@@ -14,6 +23,11 @@ interface Props {
 	description?: string | null;
 	image?: string | null;
 	canonical?: string | null;
+	/** `article` switches og:type and emits BlogPosting JSON-LD. */
+	pageType?: PageType;
+	articleMeta?: ArticleMeta;
+	/** Explicit robots directive; pages that must not be indexed pass `noindex`. */
+	robots?: string | null;
 	/** Pass content reference for plugin page contributions on content pages */
 	content?: { collection: string; id: string; slug?: string | null };
 	/** Optional class on <main> for page-specific layout. */
@@ -26,6 +40,9 @@ const {
 	description,
 	image,
 	canonical,
+	pageType = "website",
+	articleMeta,
+	robots,
 	content,
 	mainClass,
 } = Astro.props;
@@ -36,6 +53,12 @@ if (Astro.cache?.enabled) Astro.cache.set(cacheHint);
 const { siteTitle, siteTagline, siteLogo } =
 	resolveStarterSiteIdentity(settings);
 
+const siteOrigin = resolveSiteOrigin({
+	url: Astro.url,
+	settingsUrl: settings.url,
+	configUrl: Astro.locals.emdash?.config?.siteUrl,
+});
+
 const titleIncludesSiteName =
 	title === siteTitle ||
 	title.endsWith(` | ${siteTitle}`) ||
@@ -43,17 +66,35 @@ const titleIncludesSiteName =
 const fullTitle = titleIncludesSiteName ? title : `${title} — ${siteTitle}`;
 const pageDescription = description ?? siteTagline;
 
+// Content pages pass the canonical produced by `getSeoMeta()` (which already
+// honours the SEO panel). Everything else canonicalizes to the configured
+// origin plus pathname, dropping query strings so paginated/filtered views do
+// not compete with the base listing in search results. Pages marked noindex
+// (404/500, previews, editor opt-outs) omit the canonical entirely.
+const indexable = !robots?.includes("noindex");
+const canonicalUrl = indexable
+	? (canonical ?? absoluteSiteUrl(siteOrigin, Astro.url.pathname))
+	: null;
+
+// Site-configured default social image wins; otherwise use the repository's
+// clearly-labelled DEMO placeholder so shared links never render image-less.
+const socialImage =
+	image ?? settings.seo?.defaultOgImage?.url ?? `${siteOrigin}/og-default-demo.png`;
+
 const pageCtx = createPublicPageContext({
 	Astro,
 	kind: content ? "content" : "custom",
-	pageType: "website",
+	pageType,
 	title: fullTitle,
 	pageTitle: pageTitle ?? title,
 	description: pageDescription,
-	canonical,
-	image,
+	canonical: canonicalUrl,
+	image: socialImage,
 	content,
+	articleMeta,
+	seo: robots ? { robots } : undefined,
 	siteName: siteTitle,
+	siteUrl: siteOrigin,
 });
 ---
 
@@ -63,6 +104,7 @@ const pageCtx = createPublicPageContext({
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 		<title>{fullTitle}</title>
+		<meta name="generator" content={Astro.generator} />
 		<EmDashHead page={pageCtx} />
 	</head>
 	<body>

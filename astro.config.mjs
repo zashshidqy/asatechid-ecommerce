@@ -21,6 +21,14 @@ export default defineConfig({
 				directory: "./uploads",
 				baseUrl: "/_emdash/api/media/file",
 			}),
+			plugins: [
+				{
+					id: "seo-review",
+					version: "1.0.0",
+					entrypoint: "/src/plugins/seo-review/index.ts",
+					format: "native",
+				},
+			],
 		}),
 	],
 	devToolbar: { enabled: false },

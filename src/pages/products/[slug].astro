@@ -20,6 +20,7 @@ import {
 	PRODUCT_CATEGORY_TAXONOMY,
 } from "../../utils/product";
 import { resolveStarterSiteIdentity } from "../../utils/site-identity";
+import { resolveSiteOrigin } from "../../utils/site-url";
 
 const slug = decodeSlug(Astro.params.slug);
 
@@ -49,10 +50,17 @@ if (!product) {
 
 if (Astro.cache?.enabled) Astro.cache.set(cacheHint);
 
-const { siteTitle } = resolveStarterSiteIdentity(await getSiteSettings());
+const settings = await getSiteSettings();
+const { siteTitle } = resolveStarterSiteIdentity(settings);
+const siteOrigin = resolveSiteOrigin({
+	url: Astro.url,
+	settingsUrl: settings.url,
+	configUrl: Astro.locals.emdash?.config?.siteUrl,
+});
 const seo = getSeoMeta(product, {
 	siteTitle,
-	siteUrl: Astro.url.origin,
+	siteUrl: siteOrigin,
+	titleSeparator: settings.seo?.titleSeparator ?? " — ",
 	path: Astro.url.pathname.replace(/\/$/, ""),
 });
 
@@ -119,6 +127,7 @@ const relatedWithTerms = related.map((entry) => ({
 	description={seo.description}
 	canonical={seo.canonical}
 	image={seo.ogImage}
+	robots={seo.robots}
 	content={{ collection: "products", id: product.data.id, slug }}
 >
 	<Container>

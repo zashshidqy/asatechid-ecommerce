@@ -5,6 +5,7 @@ import Base from "../layouts/Base.astro";
 import Container from "../components/Container.astro";
 import Breadcrumbs from "../components/Breadcrumbs.astro";
 import { resolveStarterSiteIdentity } from "../utils/site-identity";
+import { resolveSiteOrigin } from "../utils/site-url";
 
 const slug = decodeSlug(Astro.params.slug);
 
@@ -19,11 +20,18 @@ if (!page) {
 }
 
 if (Astro.cache?.enabled) Astro.cache.set(cacheHint);
-const { siteTitle } = resolveStarterSiteIdentity(await getSiteSettings());
+const settings = await getSiteSettings();
+const { siteTitle } = resolveStarterSiteIdentity(settings);
+const siteOrigin = resolveSiteOrigin({
+	url: Astro.url,
+	settingsUrl: settings.url,
+	configUrl: Astro.locals.emdash?.config?.siteUrl,
+});
 
 const seo = getSeoMeta(page, {
 	siteTitle,
-	siteUrl: Astro.url.origin,
+	siteUrl: siteOrigin,
+	titleSeparator: settings.seo?.titleSeparator ?? " — ",
 	path: Astro.url.pathname.replace(/\/$/, ""),
 });
 ---
@@ -33,6 +41,7 @@ const seo = getSeoMeta(page, {
 	pageTitle={seo.ogTitle}
 	description={seo.description}
 	canonical={seo.canonical}
+	robots={seo.robots}
 	content={{ collection: "pages", id: page.data.id, slug }}
 >
 	<Container>

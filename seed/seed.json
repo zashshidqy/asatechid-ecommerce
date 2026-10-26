@@ -8,7 +8,10 @@
 	},
 	"settings": {
 		"title": "ASATECHID Commerce",
-		"tagline": "Katalog produk dan pusat edukasi (DEMO)"
+		"tagline": "Katalog produk dan pusat edukasi (DEMO)",
+		"seo": {
+			"titleSeparator": " — "
+		}
 	},
 	"collections": [
 		{
@@ -355,6 +358,15 @@
 					"url": "/about"
 				}
 			]
+		}
+	],
+	"redirects": [
+		{
+			"source": "/posts/welcome",
+			"destination": "/posts",
+			"type": 301,
+			"enabled": true,
+			"groupName": "DEMO"
 		}
 	],
 	"widgetAreas": [

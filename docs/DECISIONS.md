@@ -202,3 +202,136 @@ Konten publik Bahasa Indonesia (`<html lang="id">`, format tanggal `id-ID`). Mul
 - Menambah relasi baru harus memperhatikan urutan array; dokumentasi ini menjadi pengingat.
 - Relasi dua arah memerlukan salah satu sisi memakai fallback atau dipasang setelah kedua entri ada.
 - Bila seed dijalankan pada database kosong, fallback kategori memastikan halaman artikel pertama tetap memiliki bacaan lanjutan.
+
+## ADR-018 — Satu origin publik untuk canonical, OG, sitemap, dan robots
+
+**Status:** diterima (Phase 4)
+
+**Konteks:** Metadata yang dibangun dari `Astro.url.origin` mengikuti host request. Di balik reverse proxy TLS, origin internal (`http://...`) berbeda dari origin publik (`https://...`), sehingga canonical dan sitemap bisa salah. EmDash sendiri punya `getPublicOrigin()` internal dengan urutan: `config.siteUrl` → `EMDASH_SITE_URL`/`SITE_URL` → origin request.
+
+**Keputusan:**
+- `src/utils/site-url.ts` menjadi satu-satunya tempat resolusi origin, dengan urutan: site setting `url` → `config.siteUrl` → `process.env.EMDASH_SITE_URL`/`SITE_URL` → `import.meta.env` (build-time) → origin request.
+- `Base.astro` memakai helper ini untuk canonical, `siteUrl` JSON-LD, dan gambar sosial absolut.
+- `getSeoMeta()` pada halaman konten menerima origin yang sama, sehingga canonical dari SEO panel tetap konsisten.
+- Canonical membuang query string; halaman `noindex` tidak mengeluarkan canonical sama sekali.
+
+**Konsekuensi:**
+- Produksi wajib mengisi `EMDASH_SITE_URL` (atau site setting `url`). Tanpa itu perilaku kembali ke origin request.
+- Halaman pagination (`?cursor=`) dikanonikalkan ke halaman pertama.
+- Redirect bawaan EmDash tetap memakai origin request pada header `Location`; ini tidak memengaruhi canonical.
+
+## ADR-019 — JSON-LD artikel via page context, Product ditunda
+
+**Status:** diterima (Phase 4)
+
+**Konteks:** `EmDashHead` membangun JSON-LD dari `PublicPageContext`. `pageType: "article"` + `canonical` + `articleMeta` menghasilkan `BlogPosting`; tipe lain menghasilkan `WebSite`. Product/Offer membutuhkan harga, mata uang, dan ketersediaan yang belum tersedia.
+
+**Keputusan:**
+- Artikel mengirim `pageType="article"`, `articleMeta` (published, modified, author), dan canonical sehingga `BlogPosting` dirender lengkap dengan `image`, `url`, tanggal, penulis, dan publisher.
+- Produk dan halaman statis tetap `pageType="website"`; tidak ada `Product`/`Offer` JSON-LD sampai data penawaran valid tersedia.
+- Tidak menulis JSON-LD manual di template.
+
+**Konsekuensi:**
+- Halaman produk saat ini mendapat JSON-LD `WebSite` bawaan EmDash (bukan `Product`). Ini bukan markup yang salah, tetapi belum memberi rich result produk.
+- Saat harga/stok tersedia, tambahkan `Product` JSON-LD lewat kontribusi page metadata/plugin dan uji dengan validator; jangan menduplikasi tag.
+- Author JSON-LD berupa `Person` dengan nama tampilan; URL profil belum ada.
+
+## ADR-020 — Gambar sosial default berupa placeholder DEMO
+
+**Status:** diterima (Phase 4)
+
+**Konteks:** Belum ada brand guideline atau aset sosial resmi. Halaman tanpa gambar utama tetap membutuhkan `og:image` agar tautan yang dibagikan tidak kosong.
+
+**Keputusan:**
+- Menyediakan `public/og-default-demo.png` (1200×630) yang secara eksplisit menulis “DEMO — ganti gambar sosial sebelum publikasi”.
+- `Base.astro` memakai urutan: gambar entri/SEO panel → `settings.seo.defaultOgImage.url` → placeholder DEMO.
+- Admin dapat mengganti default melalui Site Settings tanpa mengubah kode.
+
+**Konsekuensi:**
+- Placeholder tidak boleh dipakai di produksi; ganti melalui Site Settings atau ganti file dan perbarui dokumentasi.
+- Placeholder memakai token warna provisional, bukan identitas brand final.
+
+## ADR-021 — Redirect lama memakai fitur bawaan EmDash + seed
+
+**Status:** diterima (Phase 4)
+
+**Konteks:** Entri DEMO `welcome` dihapus permanen; tautan lama ke `/posts/welcome` sebaiknya tidak berakhir 404. EmDash menyediakan redirect manager dan dukungan `redirects` di seed.
+
+**Keputusan:**
+- Menambahkan redirect 301 `/posts/welcome` → `/posts` di seed, sehingga dapat direproduksi di environment baru.
+- Redirect produksi berikutnya ditambahkan lewat admin atau seed setelah URL lama diketahui; tidak ada daftar manual di kode.
+
+**Konsekuensi:**
+- Redirect seed diberi `groupName: "DEMO"` agar mudah dikenali dan dihapus.
+- Redirect mengembalikan `Location` absolut berdasarkan origin request; canonical tetap memakai origin publik terkonfigurasi.
+
+## ADR-022 — SEO Review dibangun sebagai plugin native EmDash dengan Block Kit
+
+**Status:** diterima (Phase 5)
+
+**Konteks:** Roadmap Phase 5 meminta UI pratinjau SERP, audit, skor, dan publish gate. EmDash 1.3 menyediakan `editorPanels` untuk panel di editor konten, route plugin untuk data panel, Block Kit (`@emdash-cms/blocks`) untuk UI deklaratif, dan hook `content:beforePublish` untuk kebijakan publikasi. Membangun UI React kustom atau halaman admin terpisah akan menduplikasi mekanisme editor dan gate.
+
+**Keputusan:**
+- SEO Review adalah plugin native `definePlugin` dengan entrypoint `src/plugins/seo-review/index.ts`, didaftarkan di `astro.config.mjs` sebagai `format: "native"`.
+- Panel didaftarkan lewat `admin.editorPanels` untuk `posts`, `products`, dan `pages`; route `panel` mengembalikan blok Block Kit, bukan HTML/React.
+- Kapabilitas plugin dibatasi: `content:read`, `content:revisions:read`, `schema:read`, `hooks.content-policy:register`.
+- Route panel memakai permission `content:read_drafts`; dispatch editor EmDash tetap menegakkan kepemilikan entri (`content:edit_own`/`edit_any`).
+- Logika audit dan adapter dipisahkan ke `src/lib/seo-review/` sebagai modul murni yang dapat diuji tanpa CMS.
+
+**Konsekuensi:**
+- Panel mengikuti gaya dan batasan Block Kit (teks biasa, bukan Markdown); pratinjau SERP adalah simulasi, bukan render HTML Google.
+- Plugin berjalan in-process dengan akses penuh host; kapabilitas tetap ditegakkan oleh `PluginContextFactory`, tetapi tidak ada isolasi sandbox.
+- Menambah koleksi yang diaudit cukup mengubah daftar `REVIEWED_COLLECTIONS` dan panel; gate mengikuti daftar yang sama.
+- Dependency `@emdash-cms/blocks` menambah ukuran bundle admin; warning chunk > 500 kB tetap ada dan tidak memengaruhi halaman publik.
+
+## ADR-023 — Panel mengaudit revisi draf terakhir yang tersimpan
+
+**Status:** diterima (Phase 5)
+
+**Konteks:** Acceptance Phase 5 mensyaratkan UI memakai data draf dan konsisten dengan output final. Baris konten EmDash menyimpan data live dan `draftRevisionId`; slug yang diedit distaging sebagai `_slug` di revisi draf. Membaca hanya baris live akan menampilkan konten terbit, bukan yang sedang diedit.
+
+**Keputusan:**
+- Panel memuat baris konten (`ctx.content.get`) lalu menggabungkannya dengan revisi draf (`ctx.content.getRevision`) bila `draftRevisionId` ada.
+- Kunci berawalan `_` dibuang dari data revisi; `_slug` dipakai sebagai slug efektif bila ada, meniru `hydrateDraftData()` milik EmDash.
+- Publish hook memakai data yang sudah dihidrasi EmDash (`event.content`), sehingga gate menilai data yang benar-benar akan diterbitkan.
+- Panel menyatakan secara eksplisit bahwa perubahan yang belum disimpan tidak terlihat.
+
+**Konsekuensi:**
+- Pengguna harus menyimpan draf sebelum panel menampilkan perubahan terbaru.
+- Bila revisi draf hilang/rusak, panel jatuh ke data live; publish gate tetap memakai hidrasi ketat EmDash dan dapat menolak jika hidrasi gagal.
+- Perilaku ini bergantung pada bentuk internal revisi EmDash (`_slug`); perlu ditinjau saat upgrade mayor.
+
+## ADR-024 — Publish gate hanya memblokir masalah wajib
+
+**Status:** diterima (Phase 5)
+
+**Konteks:** Gate yang memblokir semua temuan akan menghambat alur editorial normal (misalnya konten pendek atau deskripsi memakai tagline). Sebaliknya, gate yang tidak memblokir apa pun tidak memenuhi tujuan Phase 5.
+
+**Keputusan:**
+- Gate `content:beforePublish` hanya memblokir tiga kondisi: judul halaman kosong, konten utama kosong (tanpa teks dan tanpa blok media), dan slug kosong.
+- Deskripsi yang jatuh ke tagline situs, panjang judul/deskripsi, alt gambar, konten tipis, tautan rusak, dan canonical berbeda tetap berupa peringatan/saran dan **tidak** memblokir.
+- Bila audit gate sendiri gagal (error tak terduga), hook mencatat error dan **tidak** membatalkan publikasi; kegagalan plugin tidak boleh mengunci CMS.
+- Alasan penolakan dikembalikan sebagai pesan `PUBLISH_REJECTED` yang menyebut temuan wajib.
+
+**Konsekuensi:**
+- Konten yang lolos gate belum tentu “baik” secara SEO; skor dan checklist tetap menjadi panduan.
+- Perubahan cakupan gate harus disertai pembaruan unit test dan dokumentasi.
+- Gate berjalan untuk ketiga koleksi; koleksi lain tidak terpengaruh.
+
+## ADR-025 — Skor audit memakai bobot tetap dan dilabeli panduan internal
+
+**Status:** diterima (Phase 5)
+
+**Konteks:** Skor numerik mudah disalahartikan sebagai prediksi peringkat Google. Bobot arbitrer juga dapat menyesatkan bila tidak dijelaskan.
+
+**Keputusan:**
+- Skor = 100 dikurangi total bobot temuan, dibatasi 0–100.
+- Bobot tetap: wajib 25, peringatan 8, saran 2, info 0.
+- Panel menampilkan rincian bobot dan teks “panduan editorial internal, bukan prediksi peringkat Google”.
+- Label skor: “Publikasi diblokir” bila gate aktif, “Baik” ≥ 85, “Cukup” ≥ 70, selain itu “Perlu perbaikan”.
+- Pemeriksaan tautan lokal rusak hanya berjalan di panel karena memerlukan daftar path terbit; publish hook melewatinya (`knownLocalPaths: null`) agar tetap cepat.
+
+**Konsekuensi:**
+- Skor tidak membandingkan antar-situs dan tidak mengukur Core Web Vitals, kecepatan, atau crawlability.
+- Menambah pemeriksaan baru mengubah skor; bobot harus ditinjau agar tidak menumpuk hukuman untuk masalah sejenis.
+- Pemeriksaan tautan di panel memakai maksimal 200 entri terbit per koleksi; katalog yang jauh lebih besar dapat melewatkan path lama (tidak ada positif palsu, tetapi bisa ada negatif palsu).

@@ -16,6 +16,7 @@ import AuthorByline from "../../components/AuthorByline.astro";
 import TableOfContents from "../../components/TableOfContents.astro";
 import PortableBlock from "../../components/PortableBlock.astro";
 import { resolveStarterSiteIdentity } from "../../utils/site-identity";
+import { resolveSiteOrigin } from "../../utils/site-url";
 import {
 	annotateHeadings,
 	formatPostDate,
@@ -52,11 +53,18 @@ if (!post) {
 
 if (Astro.cache?.enabled) Astro.cache.set(cacheHint);
 
-const { siteTitle } = resolveStarterSiteIdentity(await getSiteSettings());
+const settings = await getSiteSettings();
+const { siteTitle } = resolveStarterSiteIdentity(settings);
+const siteOrigin = resolveSiteOrigin({
+	url: Astro.url,
+	settingsUrl: settings.url,
+	configUrl: Astro.locals.emdash?.config?.siteUrl,
+});
 
 const seo = getSeoMeta(post, {
 	siteTitle,
-	siteUrl: Astro.url.origin,
+	siteUrl: siteOrigin,
+	titleSeparator: settings.seo?.titleSeparator ?? " — ",
 	path: Astro.url.pathname.replace(/\/$/, ""),
 });
 
@@ -121,6 +129,15 @@ const hasSidebar = headings.length > 0;
 	description={seo.description}
 	canonical={seo.canonical}
 	image={seo.ogImage}
+	pageType="article"
+	articleMeta={{
+		publishedTime: post.data.publishedAt?.toISOString(),
+		modifiedTime: post.data.updatedAt?.toISOString(),
+		author: bylines
+			.map((credit) => credit.byline.displayName)
+			.join(", "),
+	}}
+	robots={isPreview ? "noindex, nofollow" : seo.robots}
 	content={{ collection: "posts", id: post.data.id, slug }}
 >
 	<Container>

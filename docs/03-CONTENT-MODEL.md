@@ -134,6 +134,36 @@ tangan dari EmDash.
 - Halaman pratinjau menampilkan banner “Pratinjau” dan tidak di-cache
   (`Cache-Control: private, no-store`).
 
+## Aturan SEO rendering
+
+- Satu sumber head: `getSeoMeta()` + `EmDashHead`; template tidak menulis tag
+  title/description/canonical/JSON-LD manual.
+- Canonical absolut untuk semua halaman indexable, memakai origin publik
+  terkonfigurasi (`EMDASH_SITE_URL` / site setting `url`), tanpa query string.
+- `noindex` (404, 500, preview, SEO panel `noIndex`) tidak mengeluarkan
+  canonical.
+- Artikel: `og:type=article`, `article:*`, dan JSON-LD `BlogPosting`.
+  Halaman lain: `og:type=website` dan JSON-LD `WebSite`.
+- Gambar sosial: gambar entri → `seo.defaultOgImage` → placeholder DEMO
+  `public/og-default-demo.png`.
+- Sitemap hanya memuat entri terbit yang tidak `noIndex`; arsip taxonomy
+  belum terenumerasi (lihat catatan Phase 4 di `TODO.md`).
+- Redirect memakai redirect manager EmDash; aturan DEMO di seed adalah
+  `/posts/welcome` → `/posts` (301).
+
+## SEO Review (Phase 5)
+
+- Panel editor native `seo-review` tersedia untuk `posts`, `products`, dan
+  `pages`; panel membaca revisi draf terakhir yang tersimpan, bukan hanya
+  baris terbit.
+- Metadata pratinjau dihitung dengan `getSeoMeta()` dan fallback yang sama
+  dengan `Base.astro`, sehingga judul/deskripsi/canonical panel konsisten
+  dengan `<head>` publik.
+- Publish gate hanya memblokir judul kosong, konten utama kosong, dan slug
+  kosong. Temuan lain berupa peringatan/saran.
+- Skor dan checklist adalah panduan editorial internal, bukan prediksi
+  peringkat Google.
+
 ## Data DEMO pada seed
 
 `seed/seed.json` berisi:

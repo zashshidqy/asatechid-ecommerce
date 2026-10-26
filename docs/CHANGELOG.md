@@ -2,6 +2,67 @@
 
 Format ringkas per fase. Tanggal memakai ISO (YYYY-MM-DD).
 
+## 2026-10-26 — Phase 5: SEO Review UI
+
+### Added
+- `src/lib/seo-review/audit.ts` — engine audit murni: ekstraksi Portable Text (heading, tautan, gambar, teks), pemeriksaan SEO, bobot skor, pratinjau SERP, dan keputusan publish gate.
+- `src/lib/seo-review/review.ts` — adapter konten EmDash → input audit; meniru `getSeoMeta()` dan fallback `Base.astro` agar pratinjau sama dengan output publik.
+- `src/lib/seo-review/audit.test.ts` — 21 unit test (`node --experimental-strip-types --test`).
+- `src/plugins/seo-review/index.ts` — plugin native `definePlugin`: editor panel untuk `posts`/`products`/`pages`, route panel, pemuatan revisi draf, dan hook `content:beforePublish`.
+- `src/plugins/seo-review/panel.ts` — renderer Block Kit: banner skor/gate, statistik, pratinjau SERP desktop/mobile, checklist per tingkat, metrik konten, rincian skor, dan aksi refresh.
+- Dependency `@emdash-cms/blocks ^1.3.1` dan script `npm test`.
+
+### Changed
+- `astro.config.mjs` mendaftarkan plugin `seo-review` (`entrypoint: "/src/plugins/seo-review/index.ts"`, `format: "native"`).
+- `package.json`/`package-lock.json` memuat dependency dan script test baru.
+
+### Verified
+- `npm run typecheck` → 42 file, 0 error / 0 warning / 0 hint.
+- `npm test` → 21/21 lulus.
+- `npm run build` → sukses (warning chunk admin > 500 kB tetap ada); `npx emdash doctor` → semua cek lulus.
+- Manifest dev dan produksi menampilkan plugin aktif dengan editor panel untuk tiga koleksi.
+- Panel berfungsi untuk `posts`, `products` (termasuk draf), dan `pages`.
+- Draf kosong: panel memblokir, halaman publik tetap memakai konten terbit, dan `publish` API mengembalikan `PUBLISH_REJECTED`.
+- Entri uji valid berhasil dipublikasikan lalu dihapus permanen; route publik 404.
+- Aksi refresh mengembalikan toast dan blok baru.
+- Judul/deskripsi/canonical panel sama dengan `<head>` publik; perilaku `noindex` konsisten (tanpa canonical, panel menampilkan info noindex).
+- Produksi port 4322 dengan `EMDASH_SITE_URL` berbeda menyajikan manifest dan panel dengan canonical yang benar.
+
+### Notes
+- Panel mengaudit revisi draf tersimpan; ketikan yang belum disimpan tidak terlihat.
+- Pemeriksaan tautan lokal hanya di panel; gate hanya memblokir judul/konten/slug kosong.
+- Skor adalah panduan internal, bukan prediksi peringkat Google (ADR-022 s.d. ADR-025).
+
+## 2026-10-26 — Phase 4: SEO foundation
+
+### Added
+- `src/utils/site-url.ts` — resolusi origin publik (site setting → config → `EMDASH_SITE_URL`/`SITE_URL` runtime → origin request) dan pembentuk URL absolut.
+- `public/og-default-demo.png` — gambar sosial default 1200×630 bertanda DEMO.
+- `seed/seed.json` — `settings.seo.titleSeparator` (` — `) dan redirect 301 `/posts/welcome` → `/posts`.
+- Dukungan `pageType`, `articleMeta`, dan `robots` pada `Base.astro`.
+
+### Changed
+- `Base.astro` sekarang selalu mengeluarkan canonical absolut untuk halaman indexable, membuang query string, memakai origin publik terkonfigurasi, dan tidak mengeluarkan canonical saat `noindex`.
+- `og:type` artikel menjadi `article`; `article:published_time`, `article:modified_time`, dan `article:author` ikut dirender.
+- JSON-LD artikel menjadi `BlogPosting` (sebelumnya `WebSite`); halaman non-artikel tetap `WebSite`.
+- `og:image`/`twitter:image` selalu terisi: gambar entri → site default → placeholder DEMO.
+- `getSeoMeta()` pada artikel/produk/halaman memakai origin publik dan separator judul dari site settings.
+- 404 dan 500 mengirim `noindex, nofollow` tanpa canonical.
+- Deskripsi `/posts` tidak lagi memakai tagline situs.
+- `.env.example` dan `README.md` mendokumentasikan `EMDASH_SITE_URL`.
+
+### Verified
+- `npm run typecheck` 0 error; `npm run build` sukses.
+- Audit `<head>`: tidak ada duplikasi title/description/canonical/OG; 404 dan preview `noindex` tanpa canonical.
+- SEO panel diuji lewat API: override title/description/canonical/noIndex berlaku; `noIndex` mengeluarkan entri dari sitemap; entri uji dihapus permanen.
+- Redirect `/posts/welcome` → 301 `/posts`.
+- Produksi dengan `EMDASH_SITE_URL=http://localhost:4321` di port 4322: canonical, OG, JSON-LD, robots, dan sitemap memakai origin terkonfigurasi.
+- Sitemap hanya memuat konten terbit dan tidak `noIndex`; draft produk dan entri uji tidak muncul.
+
+### Notes
+- Product/Offer JSON-LD ditunda sampai data harga/ketersediaan tersedia (ADR-019).
+- Arsip taxonomy belum masuk sitemap (keterbatasan enumerasi EmDash); dicatat di `docs/TODO.md`.
+
 ## 2026-10-26 — Phase 3: Editorial/blog
 
 ### Added
