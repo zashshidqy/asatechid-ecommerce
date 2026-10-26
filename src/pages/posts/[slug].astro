@@ -1,0 +1,407 @@
+---
+import {
+	decodeSlug,
+	getEmDashCollection,
+	getEmDashEntry,
+	getSeoMeta,
+	getSiteSettings,
+	getTermsForEntries,
+} from "emdash";
+import { Image, PortableText } from "emdash/ui";
+import Base from "../../layouts/Base.astro";
+import Container from "../../components/Container.astro";
+import Breadcrumbs from "../../components/Breadcrumbs.astro";
+import PostGrid from "../../components/PostGrid.astro";
+import AuthorByline from "../../components/AuthorByline.astro";
+import TableOfContents from "../../components/TableOfContents.astro";
+import PortableBlock from "../../components/PortableBlock.astro";
+import { resolveStarterSiteIdentity } from "../../utils/site-identity";
+import {
+	annotateHeadings,
+	formatPostDate,
+	getPostCategories,
+	getPostTags,
+	getReadingTime,
+	POST_CATEGORY_TAXONOMY,
+	wasUpdated,
+} from "../../utils/post";
+
+const slug = decodeSlug(Astro.params.slug);
+
+if (!slug) {
+	return Astro.rewrite("/404");
+}
+
+const {
+	entry: post,
+	error,
+	cacheHint,
+	isPreview,
+} = await getEmDashEntry("posts", slug, {
+	references: { related_posts: { limit: 3 } },
+});
+
+if (error) {
+	console.error("Failed to load post:", error);
+	return new Response("Tidak dapat memuat artikel.", { status: 500 });
+}
+
+if (!post) {
+	return Astro.rewrite("/404");
+}
+
+if (Astro.cache?.enabled) Astro.cache.set(cacheHint);
+
+const { siteTitle } = resolveStarterSiteIdentity(await getSiteSettings());
+
+const seo = getSeoMeta(post, {
+	siteTitle,
+	siteUrl: Astro.url.origin,
+	path: Astro.url.pathname.replace(/\/$/, ""),
+});
+
+const { blocks, headings } = annotateHeadings(post.data.content);
+const categories = getPostCategories(post.data.terms);
+const tags = getPostTags(post.data.terms);
+const bylines = post.data.bylines ?? [];
+const publishedDate = formatPostDate(post.data.publishedAt);
+const updatedDate = wasUpdated(post.data.updatedAt, post.data.publishedAt)
+	? formatPostDate(post.data.updatedAt)
+	: null;
+const readingTime = getReadingTime(post.data.content);
+
+let related = post.references?.related_posts.entries ?? [];
+
+// Encore ke relasi eksplisit; bila kosong, pakai artikel lain di kategori yang
+// sama supaya halaman tidak berakhir tanpa bacaan lanjutan.
+if (related.length === 0 && categories.length > 0) {
+	const relatedResult = await getEmDashCollection("posts", {
+		where: { category: categories.map((category) => category.slug) },
+		orderBy: { published_at: "desc" },
+		limit: 4,
+	});
+
+	if (relatedResult.error) {
+		console.error("Failed to load related posts:", relatedResult.error);
+	} else {
+		related = relatedResult.entries
+			.filter((entry) => entry.data.id !== post.data.id)
+			.slice(0, 3);
+		if (Astro.cache?.enabled) Astro.cache.set(relatedResult.cacheHint);
+	}
+}
+
+// Reference lookups do not hydrate taxonomy terms onto the linked entries.
+const relatedTerms =
+	related.length > 0
+		? await getTermsForEntries(
+				"posts",
+				related.map((entry) => entry.data.id),
+				POST_CATEGORY_TAXONOMY,
+			)
+		: undefined;
+
+const relatedWithTerms = related.map((entry) => ({
+	...entry,
+	data: {
+		...entry.data,
+		terms: {
+			...entry.data.terms,
+			[POST_CATEGORY_TAXONOMY]: relatedTerms?.get(entry.data.id) ?? [],
+		},
+	},
+}));
+
+const hasSidebar = headings.length > 0;
+---
+
+<Base
+	title={seo.title}
+	pageTitle={seo.ogTitle}
+	description={seo.description}
+	canonical={seo.canonical}
+	image={seo.ogImage}
+	content={{ collection: "posts", id: post.data.id, slug }}
+>
+	<Container>
+		<Breadcrumbs
+			items={[
+				{ label: "Beranda", href: "/" },
+				{ label: "Artikel", href: "/posts" },
+				{ label: post.data.title },
+			]}
+		/>
+
+		{
+			isPreview && (
+				<div class="preview-banner" role="status">
+					<strong>Pratinjau</strong>
+					<span>
+						Anda melihat versi draf artikel ini. Tautan ini berlaku sementara
+						dan hanya untuk peninjau.
+					</span>
+					<a href={`/posts/${post.id}`}>Keluar dari pratinjau</a>
+				</div>
+			)
+		}
+
+		<article class="post">
+			<header class="post-head">
+				{
+					categories.length > 0 && (
+						<div class="cluster">
+							{categories.map((category) => (
+								<a class="badge" href={`/category/${category.slug}`}>
+									{category.label}
+								</a>
+							))}
+						</div>
+					)
+				}
+
+				<h1 class="post-head__title" {...post.edit.title}>
+					{post.data.title}
+				</h1>
+
+				{
+					post.data.excerpt && (
+						<p class="post-head__lead" {...post.edit.excerpt}>
+							{post.data.excerpt}
+						</p>
+					)
+				}
+
+				<div class="post-head__meta">
+					{bylines.length > 0 && <AuthorByline bylines={bylines} />}
+					{publishedDate && (
+						<time datetime={post.data.publishedAt?.toISOString()}>
+							{publishedDate}
+						</time>
+					)}
+					{updatedDate && <span>Diperbarui {updatedDate}</span>}
+					{readingTime > 0 && <span>{readingTime} menit baca</span>}
+				</div>
+			</header>
+
+			{
+				post.data.featured_image && (
+					<figure class="post-media" {...post.edit.featured_image}>
+						<Image image={post.data.featured_image} />
+					</figure>
+				)
+			}
+
+			<div class:list={["post-layout", hasSidebar && "post-layout--with-rail"]}>
+				<div class="post-main">
+					<TableOfContents headings={headings} variant="inline" />
+
+					<div class="prose">
+						<PortableText
+							value={blocks}
+							components={{ block: PortableBlock }}
+						/>
+					</div>
+
+					{
+						tags.length > 0 && (
+							<footer class="post-tags">
+								<h2 class="post-tags__heading">Tag</h2>
+								<div class="cluster">
+									{tags.map((tag) => (
+										<a class="badge" href={`/tag/${tag.slug}`}>
+											{tag.label}
+										</a>
+									))}
+								</div>
+							</footer>
+						)
+					}
+
+					{
+						bylines.length > 0 && (
+							<section class="post-author" aria-labelledby="post-author-title">
+								<h2 class="post-author__title" id="post-author-title">
+									Tentang penulis
+								</h2>
+								<AuthorByline bylines={bylines} layout="stacked" showBio />
+							</section>
+						)
+					}
+				</div>
+
+				{
+					hasSidebar && (
+						<aside class="post-rail" aria-label="Navigasi artikel">
+							<TableOfContents headings={headings} />
+						</aside>
+					)
+				}
+			</div>
+		</article>
+
+		{
+			relatedWithTerms.length > 0 && (
+				<section class="post-related" aria-labelledby="post-related-title">
+					<div class="section-head">
+						<h2 id="post-related-title">Baca juga</h2>
+						<a class="section-head__link" href="/posts">
+							Lihat semua artikel
+						</a>
+					</div>
+					<PostGrid posts={relatedWithTerms} headingLevel="h3" />
+				</section>
+			)
+		}
+	</Container>
+</Base>
+
+<style>
+	.preview-banner {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: baseline;
+		gap: var(--space-2) var(--space-4);
+		margin-bottom: var(--space-8);
+		padding: var(--space-4) var(--space-5);
+		background: var(--color-surface);
+		border: 1px solid var(--color-accent);
+		border-radius: var(--radius-md);
+		font-size: var(--text-sm);
+	}
+
+	.preview-banner a {
+		font-weight: 600;
+	}
+
+	.post-head {
+		margin-bottom: var(--space-8);
+		max-width: 46rem;
+	}
+
+	.post-head__title {
+		margin-top: var(--space-4);
+		font-size: var(--text-3xl);
+	}
+
+	.post-head__lead {
+		margin: 0;
+		color: var(--color-ink-soft);
+		font-size: var(--text-lg);
+	}
+
+	.post-head__meta {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: baseline;
+		gap: var(--space-2) var(--space-4);
+		margin-top: var(--space-4);
+		color: var(--color-muted);
+		font-size: var(--text-sm);
+	}
+
+	.post-media {
+		margin: 0 0 var(--space-10);
+		overflow: hidden;
+		background: var(--color-surface-muted);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-md);
+	}
+
+	.post-media img {
+		width: 100%;
+		height: auto;
+	}
+
+	.post-layout {
+		display: grid;
+		gap: var(--space-8);
+	}
+
+	.post-main {
+		min-width: 0;
+	}
+
+	/* The rail is a desktop enhancement; below 64rem the inline disclosure
+	   above the body is the single table of contents. */
+	.post-rail {
+		display: none;
+	}
+
+	.post-main .prose {
+		max-width: 46rem;
+	}
+
+	.post-tags {
+		max-width: 46rem;
+		margin-top: var(--space-10);
+		padding-top: var(--space-6);
+		border-top: 1px solid var(--color-border);
+	}
+
+	.post-tags__heading {
+		margin-bottom: var(--space-3);
+		color: var(--color-muted);
+		font-size: var(--text-xs);
+		letter-spacing: 0.1em;
+		text-transform: uppercase;
+	}
+
+	.post-author {
+		max-width: 46rem;
+		margin-top: var(--space-10);
+		padding: var(--space-6);
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-md);
+	}
+
+	.post-author__title {
+		margin-bottom: var(--space-4);
+		color: var(--color-muted);
+		font-size: var(--text-xs);
+		letter-spacing: 0.1em;
+		text-transform: uppercase;
+	}
+
+	.post-related {
+		margin-top: var(--space-16);
+	}
+
+	.section-head {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: flex-end;
+		justify-content: space-between;
+		gap: var(--space-4);
+		margin-bottom: var(--space-8);
+	}
+
+	.section-head h2 {
+		margin: 0;
+		font-size: var(--text-2xl);
+	}
+
+	.section-head__link {
+		font-size: var(--text-sm);
+		font-weight: 600;
+		text-decoration: none;
+	}
+
+	@media (min-width: 64rem) {
+		.post-layout--with-rail {
+			grid-template-columns: minmax(0, 1fr) 15rem;
+			gap: var(--space-12);
+		}
+
+		.post-rail {
+			display: block;
+			position: sticky;
+			top: var(--space-6);
+			align-self: start;
+		}
+
+		.post-main > :global(.toc--inline) {
+			display: none;
+		}
+	}
+</style>

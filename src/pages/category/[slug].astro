@@ -1,0 +1,120 @@
+---
+import {
+	decodeSlug,
+	getEmDashCollection,
+	getTaxonomyTermsWithCacheHint,
+} from "emdash";
+import Base from "../../layouts/Base.astro";
+import Container from "../../components/Container.astro";
+import Breadcrumbs from "../../components/Breadcrumbs.astro";
+import EmptyState from "../../components/EmptyState.astro";
+import PostGrid from "../../components/PostGrid.astro";
+import TaxonomyNav from "../../components/TaxonomyNav.astro";
+import { POST_CATEGORY_TAXONOMY } from "../../utils/post";
+
+const slug = decodeSlug(Astro.params.slug);
+const termsResult = await getTaxonomyTermsWithCacheHint(POST_CATEGORY_TAXONOMY, {
+	includeCounts: true,
+});
+const term = slug
+	? termsResult.data.find((item) => item.slug === slug)
+	: undefined;
+
+if (!term) {
+	return Astro.rewrite("/404");
+}
+
+const cursor = Astro.url.searchParams.get("cursor") || undefined;
+const {
+	entries: posts,
+	cacheHint,
+	nextCursor,
+	error,
+} = await getEmDashCollection("posts", {
+	where: { [POST_CATEGORY_TAXONOMY]: term.slug },
+	orderBy: { published_at: "desc" },
+	limit: 12,
+	cursor,
+});
+
+if (error) {
+	console.error("Failed to load posts for category:", error);
+	return new Response("Tidak dapat memuat artikel.", { status: 500 });
+}
+
+if (Astro.cache?.enabled) {
+	Astro.cache.set(termsResult.cacheHint);
+	Astro.cache.set(cacheHint);
+}
+---
+
+<Base
+	title={`${term.label} — Artikel`}
+	description={`Artikel dalam kategori ${term.label}.`}
+>
+	<Container>
+		<Breadcrumbs
+			items={[
+				{ label: "Beranda", href: "/" },
+				{ label: "Artikel", href: "/posts" },
+				{ label: term.label },
+			]}
+		/>
+
+		<header class="page-head">
+			<p class="page-head__eyebrow">Kategori Artikel</p>
+			<h1>{term.label}</h1>
+			<p class="page-head__lead">Artikel dalam kategori {term.label}.</p>
+			<p>
+				<a class="btn btn--secondary btn--sm" href="/posts">
+					Lihat semua artikel
+				</a>
+			</p>
+		</header>
+
+		<TaxonomyNav
+			terms={termsResult.data}
+			hrefBase="/category"
+			label="Kategori artikel"
+			showCounts
+		/>
+
+		{
+			posts.length === 0 ? (
+				<EmptyState
+					title="Belum ada artikel"
+					description={`Belum ada artikel yang dipublikasikan dalam kategori ${term.label}.`}
+				/>
+			) : (
+				<PostGrid posts={posts} />
+			)
+		}
+
+		{(cursor || nextCursor) && (
+			<nav class="pagination" aria-label="Navigasi halaman kategori">
+				{cursor && (
+					<a class="btn btn--secondary btn--sm" href={`/category/${term.slug}`}>
+						Halaman pertama
+					</a>
+				)}
+				{nextCursor && (
+					<a
+						class="btn btn--secondary btn--sm"
+						href={`/category/${term.slug}?cursor=${encodeURIComponent(nextCursor)}`}
+					>
+						Halaman berikutnya
+					</a>
+				)}
+			</nav>
+		)}
+	</Container>
+</Base>
+
+<style>
+	.pagination {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-3);
+		margin-top: var(--space-10);
+	}
+</style>

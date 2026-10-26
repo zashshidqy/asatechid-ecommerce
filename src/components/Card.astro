@@ -1,0 +1,11 @@
+---
+interface Props {
+	as?: "article" | "div" | "li" | "section";
+	class?: string;
+}
+
+const { as: Tag = "article", class: className } = Astro.props;
+const classes = ["card", className].filter(Boolean).join(" ");
+---
+
+<Tag class={classes}><slot /></Tag>

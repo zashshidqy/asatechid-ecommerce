@@ -1,0 +1,20 @@
+---
+import Base from "../layouts/Base.astro";
+import Container from "../components/Container.astro";
+import EmptyState from "../components/EmptyState.astro";
+import Button from "../components/Button.astro";
+---
+
+<Base title="Terjadi kesalahan">
+	<Container>
+		<EmptyState
+			title="Terjadi kesalahan"
+			description="Permintaan Anda tidak dapat diproses saat ini. Silakan coba lagi beberapa saat lagi."
+			headingLevel="h1"
+		>
+			<div class="cluster">
+				<Button href="/">Kembali ke beranda</Button>
+			</div>
+		</EmptyState>
+	</Container>
+</Base>

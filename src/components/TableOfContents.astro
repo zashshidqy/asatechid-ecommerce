@@ -1,0 +1,140 @@
+---
+import type { PostHeading } from "../utils/post";
+
+interface Props {
+	headings: PostHeading[];
+	/** rail: sticky sidebar nav. inline: collapsed disclosure above the body. */
+	variant?: "rail" | "inline";
+}
+
+const { headings, variant = "rail" } = Astro.props;
+const titleId = variant === "rail" ? "toc-title" : "toc-title-inline";
+---
+
+{
+	headings.length > 0 && variant === "rail" && (
+		<nav class="toc" aria-labelledby={titleId}>
+			<h2 class="toc__title" id={titleId}>
+				Daftar isi
+			</h2>
+			<ol class="toc__list">
+				{headings.map((heading) => (
+					<li
+						class:list={[
+							"toc__item",
+							heading.level === 3 && "toc__item--nested",
+						]}
+					>
+						<a class="toc__link" href={`#${heading.id}`}>
+							{heading.text}
+						</a>
+					</li>
+				))}
+			</ol>
+		</nav>
+	)
+}
+
+{
+	headings.length > 0 && variant === "inline" && (
+		<details class="toc toc--inline">
+			<summary class="toc__summary">Daftar isi</summary>
+			<nav aria-labelledby={titleId}>
+				<h2 class="sr-only" id={titleId}>
+					Daftar isi
+				</h2>
+				<ol class="toc__list">
+					{headings.map((heading) => (
+						<li
+							class:list={[
+								"toc__item",
+								heading.level === 3 && "toc__item--nested",
+							]}
+						>
+							<a class="toc__link" href={`#${heading.id}`}>
+								{heading.text}
+							</a>
+						</li>
+					))}
+				</ol>
+			</nav>
+		</details>
+	)
+}
+
+<style>
+	.toc__title {
+		margin-bottom: var(--space-3);
+		color: var(--color-muted);
+		font-size: var(--text-xs);
+		font-weight: 700;
+		letter-spacing: 0.1em;
+		text-transform: uppercase;
+	}
+
+	.toc__list {
+		display: grid;
+		gap: var(--space-2);
+		margin: 0;
+		padding: 0;
+		list-style: none;
+		border-left: 1px solid var(--color-border);
+	}
+
+	.toc__item {
+		padding-left: var(--space-4);
+		font-size: var(--text-sm);
+		line-height: 1.4;
+	}
+
+	.toc__item--nested {
+		padding-left: var(--space-7);
+		font-size: var(--text-xs);
+	}
+
+	.toc__link {
+		color: var(--color-ink-soft);
+		text-decoration: none;
+	}
+
+	.toc__link:hover {
+		color: var(--color-accent);
+		text-decoration: underline;
+	}
+
+	.toc--inline {
+		margin-bottom: var(--space-8);
+		padding: var(--space-4);
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-md);
+	}
+
+	.toc__summary {
+		color: var(--color-ink);
+		font-size: var(--text-sm);
+		font-weight: 650;
+		cursor: pointer;
+	}
+
+	.toc__summary:focus-visible {
+		outline: 3px solid var(--color-focus);
+		outline-offset: 2px;
+	}
+
+	.toc--inline[open] .toc__summary {
+		margin-bottom: var(--space-4);
+	}
+
+	.toc--inline .toc__list {
+		border-left: 0;
+	}
+
+	.toc--inline .toc__item {
+		padding-left: 0;
+	}
+
+	.toc--inline .toc__item--nested {
+		padding-left: var(--space-4);
+	}
+</style>

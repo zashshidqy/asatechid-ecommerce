@@ -1,0 +1,451 @@
+---
+import {
+	decodeSlug,
+	getEmDashCollection,
+	getEmDashEntry,
+	getSeoMeta,
+	getSiteSettings,
+	getTermsForEntries,
+} from "emdash";
+import { Image, PortableText } from "emdash/ui";
+import Base from "../../layouts/Base.astro";
+import Container from "../../components/Container.astro";
+import Breadcrumbs from "../../components/Breadcrumbs.astro";
+import Badge from "../../components/Badge.astro";
+import ProductGrid from "../../components/ProductGrid.astro";
+import {
+	availabilityLabel,
+	formatProductPrice,
+	getProductCategories,
+	PRODUCT_CATEGORY_TAXONOMY,
+} from "../../utils/product";
+import { resolveStarterSiteIdentity } from "../../utils/site-identity";
+
+const slug = decodeSlug(Astro.params.slug);
+
+if (!slug) {
+	return Astro.rewrite("/404");
+}
+
+const { entry: product, error, cacheHint } = await getEmDashEntry(
+	"products",
+	slug,
+	{
+		references: {
+			brand: true,
+			related_products: { limit: 4 },
+		},
+	},
+);
+
+if (error) {
+	console.error("Failed to load product:", error);
+	return new Response("Tidak dapat memuat produk.", { status: 500 });
+}
+
+if (!product) {
+	return Astro.rewrite("/404");
+}
+
+if (Astro.cache?.enabled) Astro.cache.set(cacheHint);
+
+const { siteTitle } = resolveStarterSiteIdentity(await getSiteSettings());
+const seo = getSeoMeta(product, {
+	siteTitle,
+	siteUrl: Astro.url.origin,
+	path: Astro.url.pathname.replace(/\/$/, ""),
+});
+
+const categories = getProductCategories(product.data.terms);
+const brand = product.references?.brand.entries[0] ?? null;
+const price = formatProductPrice(product.data.price, product.data.currency);
+const availability = availabilityLabel(product.data.availability);
+const specifications = product.data.specifications ?? [];
+
+const missingFields: string[] = [];
+if (!price) missingFields.push("harga");
+if (!availability) missingFields.push("ketersediaan");
+const missingNote =
+	missingFields.length > 0
+		? `Informasi ${missingFields.join(" dan ")} belum tersedia.`
+		: null;
+
+let related = product.references?.related_products.entries ?? [];
+
+if (related.length === 0 && categories.length > 0) {
+	const relatedResult = await getEmDashCollection("products", {
+		where: { product_category: categories.map((category) => category.slug) },
+		orderBy: { published_at: "desc" },
+		limit: 5,
+	});
+
+	if (relatedResult.error) {
+		console.error("Failed to load related products:", relatedResult.error);
+	} else {
+		related = relatedResult.entries
+			.filter((entry) => entry.data.id !== product.data.id)
+			.slice(0, 3);
+		if (Astro.cache?.enabled) Astro.cache.set(relatedResult.cacheHint);
+	}
+}
+
+// Reference lookups do not hydrate taxonomy terms onto the linked entries.
+// Fetch the category terms for the related cards so their badges stay
+// consistent with the main catalogue grid.
+const relatedTerms =
+	related.length > 0
+		? await getTermsForEntries(
+				"products",
+				related.map((entry) => entry.data.id),
+				PRODUCT_CATEGORY_TAXONOMY,
+			)
+		: undefined;
+
+const relatedWithTerms = related.map((entry) => ({
+	...entry,
+	data: {
+		...entry.data,
+		terms: {
+			...entry.data.terms,
+			[PRODUCT_CATEGORY_TAXONOMY]: relatedTerms?.get(entry.data.id) ?? [],
+		},
+	},
+}));
+---
+
+<Base
+	title={seo.title}
+	pageTitle={seo.ogTitle}
+	description={seo.description}
+	canonical={seo.canonical}
+	image={seo.ogImage}
+	content={{ collection: "products", id: product.data.id, slug }}
+>
+	<Container>
+		<Breadcrumbs
+			items={[
+				{ label: "Beranda", href: "/" },
+				{ label: "Produk", href: "/products" },
+				{ label: product.data.title },
+			]}
+		/>
+
+		<article class="product">
+			<div class="product__layout">
+				<div class="product__media" {...(product.edit.featured_image ?? {})}>
+					{
+						product.data.featured_image ? (
+							<Image image={product.data.featured_image} />
+						) : (
+							<div class="product__placeholder">
+								<span>Gambar belum tersedia</span>
+							</div>
+						)
+					}
+				</div>
+
+				<div class="product__summary">
+					{
+						categories.length > 0 && (
+							<div class="cluster">
+								{categories.map((category) => (
+									<a
+										class="badge badge--muted"
+										href={`/products/category/${category.slug}`}
+									>
+										{category.label}
+									</a>
+								))}
+							</div>
+						)
+					}
+
+					<h1 {...product.edit.title}>{product.data.title}</h1>
+
+					{
+						product.data.excerpt && (
+							<p class="product__lead" {...product.edit.excerpt}>
+								{product.data.excerpt}
+							</p>
+						)
+					}
+
+					{brand && (
+						<p class="product__brand">
+							Merek: <strong>{brand.data.name}</strong>
+						</p>
+					)}
+
+					<div class="product__commerce">
+						{
+							price ? (
+								<p class="product__price">{price}</p>
+							) : (
+								<p class="product__price product__price--missing">
+									Harga belum tersedia
+								</p>
+							)
+						}
+						{
+							availability ? (
+								<div class="product__availability">
+									<span class="product__availability-label">Ketersediaan:</span>
+									<Badge
+										tone={
+											availability === "Tersedia"
+												? "accent"
+												: availability === "Pre-order"
+													? "default"
+													: "muted"
+										}
+									>
+										{availability}
+									</Badge>
+								</div>
+							) : (
+								<p class="product__availability product__availability--missing">
+									Ketersediaan belum tersedia
+								</p>
+							)
+						}
+						{missingNote && <p class="product__note">{missingNote}</p>}
+					</div>
+
+					{
+						product.data.sku && (
+							<p class="product__sku">
+								SKU: <span>{product.data.sku}</span>
+							</p>
+						)
+					}
+				</div>
+			</div>
+
+			<section class="product__section" aria-labelledby="product-description">
+				<h2 id="product-description">Deskripsi</h2>
+				{
+					product.data.description ? (
+						<div class="prose">
+							<PortableText value={product.data.description} />
+						</div>
+					) : (
+						<p class="product__empty">Deskripsi belum tersedia.</p>
+					)
+				}
+			</section>
+
+			{
+				specifications.length > 0 && (
+					<section class="product__section" aria-labelledby="product-specs">
+						<h2 id="product-specs">Spesifikasi</h2>
+						<table class="spec-table">
+							<tbody>
+								{specifications.map((row) => (
+									<tr>
+										<th scope="row">{row.label}</th>
+										<td>{row.value}</td>
+									</tr>
+								))}
+							</tbody>
+						</table>
+					</section>
+				)
+			}
+
+			{
+				related.length > 0 && (
+					<section class="product__section" aria-labelledby="product-related">
+						<div class="product__section-head">
+							<h2 id="product-related">Produk terkait</h2>
+							<a class="product__section-link" href="/products">
+								Lihat semua produk
+							</a>
+						</div>
+						<ProductGrid products={relatedWithTerms} headingLevel="h3" />
+					</section>
+				)
+			}
+		</article>
+	</Container>
+</Base>
+
+<style>
+	.product__layout {
+		display: grid;
+		gap: var(--space-8);
+		margin-bottom: var(--space-12);
+	}
+
+	.product__media {
+		overflow: hidden;
+		background: var(--color-surface-muted);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-md);
+		aspect-ratio: 4 / 3;
+	}
+
+	.product__media img {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+	}
+
+	.product__placeholder {
+		display: grid;
+		place-items: center;
+		height: 100%;
+		padding: var(--space-6);
+		color: var(--color-muted);
+		font-size: var(--text-xs);
+		font-weight: 600;
+		letter-spacing: 0.04em;
+		text-transform: uppercase;
+	}
+
+	.product__summary {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-4);
+		align-self: start;
+	}
+
+	.product__summary h1 {
+		margin: 0;
+		font-size: var(--text-3xl);
+	}
+
+	.product__lead {
+		margin: 0;
+		color: var(--color-ink-soft);
+		font-size: var(--text-lg);
+	}
+
+	.product__brand {
+		margin: 0;
+		color: var(--color-muted);
+		font-size: var(--text-sm);
+	}
+
+	.product__commerce {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-3);
+		margin-top: var(--space-2);
+		padding: var(--space-5);
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-md);
+	}
+
+	.product__price {
+		margin: 0;
+		font-size: var(--text-2xl);
+		font-weight: 700;
+	}
+
+	.product__price--missing {
+		color: var(--color-muted);
+		font-size: var(--text-xl);
+		font-weight: 600;
+	}
+
+	.product__availability {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: var(--space-2);
+		margin: 0;
+		font-size: var(--text-sm);
+	}
+
+	.product__availability-label {
+		color: var(--color-ink-soft);
+		font-weight: 600;
+	}
+
+	.product__availability--missing {
+		color: var(--color-muted);
+	}
+
+	.product__note {
+		margin: 0;
+		color: var(--color-muted);
+		font-size: var(--text-sm);
+	}
+
+	.product__sku {
+		margin: 0;
+		color: var(--color-muted);
+		font-size: var(--text-sm);
+	}
+
+	.product__section {
+		padding-top: var(--space-8);
+		border-top: 1px solid var(--color-border);
+		margin-top: var(--space-10);
+	}
+
+	.product__section h2 {
+		font-size: var(--text-2xl);
+	}
+
+	.product__section-head {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: flex-end;
+		justify-content: space-between;
+		gap: var(--space-4);
+		margin-bottom: var(--space-6);
+	}
+
+	.product__section-head h2 {
+		margin-bottom: 0;
+	}
+
+	.product__section-link {
+		font-size: var(--text-sm);
+		font-weight: 600;
+		text-decoration: none;
+	}
+
+	.product__section-link:hover {
+		text-decoration: underline;
+	}
+
+	.product__empty {
+		color: var(--color-muted);
+	}
+
+	.spec-table {
+		width: 100%;
+		max-width: 42rem;
+		border-collapse: collapse;
+		font-size: var(--text-sm);
+	}
+
+	.spec-table th,
+	.spec-table td {
+		padding: var(--space-3) var(--space-4);
+		border-bottom: 1px solid var(--color-border);
+		text-align: left;
+		vertical-align: top;
+	}
+
+	.spec-table th {
+		width: 40%;
+		color: var(--color-ink-soft);
+		font-weight: 600;
+	}
+
+	.spec-table td {
+		color: var(--color-ink);
+		white-space: pre-line;
+	}
+
+	@media (min-width: 60rem) {
+		.product__layout {
+			grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+			gap: var(--space-12);
+		}
+	}
+</style>

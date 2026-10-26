@@ -1,0 +1,109 @@
+---
+import { Image } from "emdash/ui";
+import Card from "./Card.astro";
+import AuthorByline from "./AuthorByline.astro";
+import {
+	formatPostDate,
+	getPostCategories,
+	getReadingTime,
+	type PostCardEntry,
+} from "../utils/post";
+
+interface Props {
+	post: PostCardEntry;
+	headingLevel?: "h2" | "h3";
+	showAuthor?: boolean;
+	categoryLimit?: number;
+}
+
+const {
+	post,
+	headingLevel = "h2",
+	showAuthor = true,
+	categoryLimit = 2,
+} = Astro.props;
+
+const Heading = headingLevel;
+const image = post.data.featured_image;
+const categories = getPostCategories(post.data.terms).slice(0, categoryLimit);
+const date = formatPostDate(post.data.publishedAt);
+const readingTime = getReadingTime(post.data.content);
+const bylines = post.data.bylines ?? [];
+---
+
+<Card>
+	<div class="card__media" {...(post.edit?.featured_image ?? {})}>
+		{
+			image ? (
+				<Image image={image} />
+			) : (
+				<div class="post-card__placeholder">
+					<span>Gambar belum tersedia</span>
+				</div>
+			)
+		}
+	</div>
+	<div class="card__body">
+		{
+			categories.length > 0 && (
+				<div class="post-card__categories">
+					{categories.map((category) => (
+						<a class="badge badge--muted" href={`/category/${category.slug}`}>
+							{category.label}
+						</a>
+					))}
+				</div>
+			)
+		}
+
+		<Heading class="card__title">
+			<a href={`/posts/${post.id}`}>{post.data.title}</a>
+		</Heading>
+
+		{
+			post.data.excerpt && (
+				<p class="card__excerpt" {...(post.edit?.excerpt ?? {})}>
+					{post.data.excerpt}
+				</p>
+			)
+		}
+
+		<div class="card__meta post-card__meta">
+			{date && <time datetime={post.data.publishedAt?.toISOString()}>{date}</time>}
+			{readingTime > 0 && <span>{readingTime} menit baca</span>}
+		</div>
+
+		{showAuthor && bylines.length > 0 && <AuthorByline bylines={bylines} />}
+	</div>
+</Card>
+
+<style>
+	.post-card__placeholder {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		height: 100%;
+		padding: var(--space-4);
+		background: var(--color-surface-muted);
+	}
+
+	.post-card__placeholder span {
+		color: var(--color-muted);
+		font-size: var(--text-xs);
+		font-weight: 600;
+		letter-spacing: 0.04em;
+		text-transform: uppercase;
+	}
+
+	.post-card__categories {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-2);
+	}
+
+	.post-card__meta {
+		margin-top: auto;
+		margin-bottom: 0;
+		padding-top: var(--space-2);
+	}
+</style>

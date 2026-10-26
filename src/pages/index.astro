@@ -1,0 +1,163 @@
+---
+import { getEmDashCollection, getSiteSettings, getTaxonomyTermsWithCacheHint } from "emdash";
+import Base from "../layouts/Base.astro";
+import Container from "../components/Container.astro";
+import Button from "../components/Button.astro";
+import EmptyState from "../components/EmptyState.astro";
+import ProductGrid from "../components/ProductGrid.astro";
+import TaxonomyNav from "../components/TaxonomyNav.astro";
+import PostGrid from "../components/PostGrid.astro";
+import { resolveStarterSiteIdentity } from "../utils/site-identity";
+
+const { entries: posts, cacheHint } = await getEmDashCollection("posts", {
+	orderBy: { published_at: "desc" },
+	limit: 6,
+});
+if (Astro.cache?.enabled) Astro.cache.set(cacheHint);
+
+// Boolean fields cannot be used in `where` on this EmDash version, so the
+// featured flag is applied in memory over a small ordered page. Revisit if the
+// catalogue grows beyond one page of candidates.
+const productsResult = await getEmDashCollection("products", {
+	orderBy: { published_at: "desc" },
+	limit: 12,
+});
+if (Astro.cache?.enabled) Astro.cache.set(productsResult.cacheHint);
+const featuredProducts = productsResult.entries
+	.filter((product) => product.data.featured === true)
+	.slice(0, 3);
+
+const productCategories = await getTaxonomyTermsWithCacheHint(
+	"product_category",
+	{ includeCounts: true },
+);
+if (Astro.cache?.enabled) Astro.cache.set(productCategories.cacheHint);
+
+const { siteTitle, siteTagline } = resolveStarterSiteIdentity(
+	await getSiteSettings(),
+);
+---
+
+<Base title={siteTitle} description={siteTagline} mainClass="site-main--flush">
+	<section class="hero">
+		<Container>
+			<div class="hero__inner stack stack--lg">
+				<div class="stack">
+					<p class="page-head__eyebrow">Katalog &amp; Edukasi</p>
+					<h1>Produk yang jelas, informasi yang bisa dipercaya.</h1>
+					<p class="hero__lead">
+						ASATECHID Commerce menyatukan katalog produk dan panduan yang
+						membantu Anda memahami pilihan sebelum memutuskan. Harga dan
+						ketersediaan hanya ditampilkan jika datanya sudah tersedia.
+					</p>
+				</div>
+				<div class="cluster">
+					<Button href="/products">Lihat katalog</Button>
+					<Button href="/posts" variant="secondary">Baca artikel</Button>
+				</div>
+			</div>
+		</Container>
+	</section>
+
+	{
+		productCategories.data.length > 0 && (
+			<section class="section section--tight">
+				<Container>
+					<div class="section-head">
+						<div>
+							<h2>Kategori produk</h2>
+							<p class="section-head__lead">
+								Mulai dari kelompok produk yang relevan.
+							</p>
+						</div>
+						<a class="section-head__link" href="/products">
+							Lihat semua produk
+						</a>
+					</div>
+					<TaxonomyNav
+						terms={productCategories.data}
+						hrefBase="/products/category"
+						label="Kategori produk"
+						showCounts
+					/>
+				</Container>
+			</section>
+		)
+	}
+
+	{
+		featuredProducts.length > 0 && (
+			<section class="section">
+				<Container>
+					<div class="section-head">
+						<div>
+							<h2>Produk pilihan</h2>
+							<p class="section-head__lead">
+								Pilihan dari katalog yang sedang kami tampilkan.
+							</p>
+						</div>
+						<a class="section-head__link" href="/products">
+							Lihat semua produk
+						</a>
+					</div>
+					<ProductGrid products={featuredProducts} headingLevel="h3" />				</Container>
+			</section>
+		)
+	}
+
+	<section class="section">
+		<Container>
+		<div class="section-head">
+			<div>
+				<h2>Artikel terbaru</h2>
+				<p class="section-head__lead">
+					Panduan dan catatan yang relevan dengan produk dan teknologi.
+				</p>
+			</div>
+			<a class="section-head__link" href="/posts">Lihat semua artikel</a>
+		</div>
+
+		{
+			posts.length === 0 ? (
+				<EmptyState
+					title="Belum ada artikel"
+					description="Artikel akan muncul di sini setelah dipublikasikan melalui CMS."
+				/>
+			) : (
+				<PostGrid posts={posts} headingLevel="h3" />
+			)
+		}
+		</Container>
+	</section>
+</Base>
+
+<style>
+	.section-head {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: flex-end;
+		justify-content: space-between;
+		gap: var(--space-4);
+		margin-bottom: var(--space-8);
+	}
+
+	.section-head h2 {
+		margin-bottom: var(--space-2);
+		font-size: var(--text-2xl);
+	}
+
+	.section-head__lead {
+		margin: 0;
+		color: var(--color-muted);
+	}
+
+	.section-head__link {
+		font-size: var(--text-sm);
+		font-weight: 600;
+		text-decoration: none;
+	}
+
+	.section-head__link:hover {
+		text-decoration: underline;
+	}
+</style>

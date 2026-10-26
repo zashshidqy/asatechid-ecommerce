@@ -1,0 +1,21 @@
+---
+import Base from "../layouts/Base.astro";
+import Container from "../components/Container.astro";
+import EmptyState from "../components/EmptyState.astro";
+import Button from "../components/Button.astro";
+---
+
+<Base title="Halaman tidak ditemukan">
+	<Container>
+		<EmptyState
+			title="Halaman tidak ditemukan"
+			description="Alamat yang Anda buka mungkin salah ketik, sudah dipindahkan, atau tidak pernah ada."
+			headingLevel="h1"
+		>
+			<div class="cluster">
+				<Button href="/">Kembali ke beranda</Button>
+				<Button href="/products" variant="secondary">Lihat produk</Button>
+			</div>
+		</EmptyState>
+	</Container>
+</Base>

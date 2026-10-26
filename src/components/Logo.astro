@@ -1,0 +1,82 @@
+---
+import type { MediaReference } from "../utils/site-identity";
+
+interface Props {
+	title: string;
+	logo?: MediaReference | null;
+	/** When true, renders the compact mark only (for footer or tight spaces). */
+	compact?: boolean;
+}
+
+const { title, logo, compact = false } = Astro.props;
+---
+
+{/*
+	PLACEHOLDER LOGO — replace with the official ASATECHID asset when available.
+	If an EmDash site logo is configured, it is used instead of the text wordmark.
+*/}
+<a class="brand" href="/" aria-label={`${title} — beranda`}>
+	{
+		logo?.url ? (
+			<img class="brand__image" src={logo.url} alt={logo.alt || title} />
+		) : (
+			<>
+				<span class="brand__mark" aria-hidden="true">A</span>
+				{!compact && (
+					<span class="brand__text">
+						<span class="brand__name">ASATECHID</span>
+						<span class="brand__sub">Commerce</span>
+					</span>
+				)}
+			</>
+		)
+	}
+</a>
+
+<style>
+	.brand {
+		display: inline-flex;
+		align-items: center;
+		gap: var(--space-3);
+		color: var(--color-ink);
+		text-decoration: none;
+	}
+
+	.brand__image {
+		height: 2.25rem;
+		width: auto;
+	}
+
+	.brand__mark {
+		display: grid;
+		place-items: center;
+		width: 2.25rem;
+		height: 2.25rem;
+		background: var(--color-ink);
+		color: var(--color-surface);
+		border-radius: var(--radius-sm);
+		font-family: var(--font-display);
+		font-size: var(--text-lg);
+		font-weight: 700;
+		line-height: 1;
+	}
+
+	.brand__text {
+		display: flex;
+		flex-direction: column;
+		line-height: 1.1;
+	}
+
+	.brand__name {
+		font-size: var(--text-base);
+		font-weight: 700;
+		letter-spacing: 0.08em;
+	}
+
+	.brand__sub {
+		font-size: var(--text-xs);
+		color: var(--color-muted);
+		letter-spacing: 0.12em;
+		text-transform: uppercase;
+	}
+</style>

@@ -1,0 +1,53 @@
+---
+import type { TaxonomyTerm } from "emdash";
+
+interface Props {
+	terms: TaxonomyTerm[];
+	/** Path prefix without a trailing slash, e.g. "/products/category". */
+	hrefBase: string;
+	label: string;
+	showCounts?: boolean;
+	class?: string;
+}
+
+const {
+	terms,
+	hrefBase,
+	label,
+	showCounts = false,
+	class: className,
+} = Astro.props;
+
+const base = hrefBase.replace(/\/$/, "");
+---
+
+{
+	terms.length > 0 && (
+		<nav class:list={["term-nav", className]} aria-label={label}>
+			<ul class="cluster">
+				{terms.map((term) => (
+					<li>
+						<a class="badge" href={`${base}/${term.slug}`}>
+							{term.label}
+							{showCounts && typeof term.count === "number"
+								? ` (${term.count})`
+								: ""}
+						</a>
+					</li>
+				))}
+			</ul>
+		</nav>
+	)
+}
+
+<style>
+	.term-nav {
+		margin-bottom: var(--space-6);
+	}
+
+	.term-nav ul {
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+</style>

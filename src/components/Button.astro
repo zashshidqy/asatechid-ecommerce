@@ -1,0 +1,52 @@
+---
+interface Props {
+	href?: string;
+	variant?: "primary" | "secondary" | "ghost";
+	size?: "sm" | "md";
+	type?: "button" | "submit" | "reset";
+	disabled?: boolean;
+	class?: string;
+	ariaLabel?: string;
+}
+
+const {
+	href,
+	variant = "primary",
+	size = "md",
+	type = "button",
+	disabled = false,
+	class: className,
+	ariaLabel,
+} = Astro.props;
+
+const classes = [
+	"btn",
+	`btn--${variant}`,
+	size === "sm" ? "btn--sm" : null,
+	className,
+]
+	.filter(Boolean)
+	.join(" ");
+---
+
+{
+	href ? (
+		<a
+			href={href}
+			class={classes}
+			aria-label={ariaLabel}
+			aria-disabled={disabled ? "true" : undefined}
+		>
+			<slot />
+		</a>
+	) : (
+		<button
+			type={type}
+			class={classes}
+			disabled={disabled}
+			aria-label={ariaLabel}
+		>
+			<slot />
+		</button>
+	)
+}

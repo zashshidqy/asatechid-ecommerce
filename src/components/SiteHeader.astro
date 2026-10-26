@@ -1,0 +1,245 @@
+---
+import { getMenuWithCacheHint } from "emdash";
+import LiveSearch from "emdash/ui/search";
+import Logo from "./Logo.astro";
+import type { MediaReference } from "../utils/site-identity";
+
+interface Props {
+	siteTitle: string;
+	siteLogo?: MediaReference | null;
+	searchCollections?: string[];
+}
+
+const {
+	siteTitle,
+	siteLogo = null,
+	searchCollections = ["products", "posts", "pages"],
+} = Astro.props;
+
+const searchRouteMap = {
+	products: "/products/:slug",
+	posts: "/posts/:slug",
+	pages: "/:slug",
+};
+
+const { data: menu, cacheHint } = await getMenuWithCacheHint("primary");
+if (Astro.cache?.enabled) Astro.cache.set(cacheHint);
+
+const items = menu?.items ?? [];
+const path = Astro.url.pathname.replace(/\/+$/, "") || "/";
+
+function isActive(url: string): boolean {
+	if (!url.startsWith("/")) return false;
+	const normalized = url.replace(/\/+$/, "") || "/";
+	return normalized === "/"
+		? path === "/"
+		: path === normalized || path.startsWith(`${normalized}/`);
+}
+---
+
+<header class="site-header">
+	<div class="container site-header__inner">
+		<Logo title={siteTitle} logo={siteLogo} />
+
+		<nav class="site-nav" aria-label="Navigasi utama">
+			{
+				items.map((item) => (
+					<a
+						class="site-nav__link"
+						href={item.url}
+						target={item.target}
+						rel={item.target === "_blank" ? "noopener noreferrer" : undefined}
+						aria-current={isActive(item.url) ? "page" : undefined}
+					>
+						{item.label}
+					</a>
+				))
+			}
+		</nav>
+
+		<div class="site-header__actions">
+			<div class="site-search" role="search" aria-label="Pencarian situs">
+				<LiveSearch
+					placeholder="Cari produk atau artikel..."
+					collections={searchCollections}
+					routeMap={searchRouteMap}
+				>
+					<span slot="loading">Mencari…</span>
+					<span slot="no-results">Tidak ada hasil.</span>
+				</LiveSearch>
+			</div>
+
+			<details class="nav-disclosure">
+				<summary class="btn btn--secondary btn--sm">Menu</summary>
+				<nav class="nav-disclosure__panel" aria-label="Navigasi seluler">
+					<div class="nav-disclosure__search">
+						<LiveSearch
+							placeholder="Cari produk atau artikel..."
+							collections={searchCollections}
+							routeMap={searchRouteMap}
+						>
+							<span slot="loading">Mencari…</span>
+							<span slot="no-results">Tidak ada hasil.</span>
+						</LiveSearch>
+					</div>
+					{
+						items.map((item) => (
+							<a
+								href={item.url}
+								target={item.target}
+								rel={item.target === "_blank" ? "noopener noreferrer" : undefined}
+								aria-current={isActive(item.url) ? "page" : undefined}
+							>
+								{item.label}
+							</a>
+						))
+					}
+				</nav>
+			</details>
+		</div>
+	</div>
+</header>
+
+<style>
+	.site-header {
+		position: relative;
+		z-index: 10;
+		background: var(--color-surface);
+		border-bottom: 1px solid var(--color-border);
+	}
+
+	.site-header__inner {
+		display: flex;
+		align-items: center;
+		gap: var(--space-6);
+		min-height: var(--header-height);
+	}
+
+	.site-nav {
+		display: none;
+		gap: var(--space-6);
+	}
+
+	.site-nav__link {
+		color: var(--color-ink-soft);
+		font-size: var(--text-sm);
+		font-weight: 600;
+		text-decoration: none;
+		padding-block: var(--space-2);
+		border-bottom: 2px solid transparent;
+	}
+
+	.site-nav__link:hover {
+		color: var(--color-ink);
+	}
+
+	.site-nav__link[aria-current="page"] {
+		color: var(--color-accent);
+		border-bottom-color: var(--color-accent);
+	}
+
+	.site-header__actions {
+		display: flex;
+		align-items: center;
+		gap: var(--space-3);
+		margin-left: auto;
+	}
+
+	.site-search {
+		display: none;
+	}
+
+	.nav-disclosure {
+		position: relative;
+	}
+
+	.nav-disclosure > summary {
+		list-style: none;
+		user-select: none;
+	}
+
+	.nav-disclosure > summary::-webkit-details-marker {
+		display: none;
+	}
+
+	.nav-disclosure[open] > summary {
+		background: var(--color-surface-muted);
+		border-color: var(--color-ink-soft);
+	}
+
+	.nav-disclosure__panel {
+		position: absolute;
+		top: calc(100% + var(--space-2));
+		right: 0;
+		display: flex;
+		flex-direction: column;
+		width: min(20rem, calc(100vw - 2 * var(--container-pad)));
+		padding: var(--space-2);
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-md);
+		box-shadow: var(--shadow-md);
+	}
+
+	.nav-disclosure__search {
+		margin-bottom: var(--space-2);
+		padding: var(--space-2) var(--space-2) var(--space-3);
+		border-bottom: 1px solid var(--color-border);
+	}
+
+	.nav-disclosure__panel a {
+		padding: var(--space-2) var(--space-3);
+		border-radius: var(--radius-sm);
+		color: var(--color-ink-soft);
+		font-size: var(--text-sm);
+		font-weight: 600;
+		text-decoration: none;
+	}
+
+	.nav-disclosure__panel a:hover {
+		background: var(--color-surface-muted);
+		color: var(--color-ink);
+	}
+
+	.nav-disclosure__panel a[aria-current="page"] {
+		color: var(--color-accent);
+	}
+
+	@media (min-width: 48rem) {
+		.site-nav {
+			display: flex;
+		}
+
+		.site-search {
+			display: block;
+		}
+
+		.nav-disclosure {
+			display: none;
+		}
+	}
+</style>
+
+<script>
+	// EmDash's LiveSearch input has no label prop. Add an accessible name.
+	for (const input of document.querySelectorAll<HTMLInputElement>(
+		".emdash-live-search-input",
+	)) {
+		if (!input.getAttribute("aria-label")) {
+			input.setAttribute("aria-label", "Cari di situs");
+		}
+	}
+
+	// Close the mobile menu with Escape.
+	document.addEventListener("keydown", (event) => {
+		if (event.key !== "Escape") return;
+		const open = document.querySelector<HTMLDetailsElement>(
+			".nav-disclosure[open]",
+		);
+		if (open) {
+			open.open = false;
+			open.querySelector("summary")?.focus();
+		}
+	});
+</script>
+

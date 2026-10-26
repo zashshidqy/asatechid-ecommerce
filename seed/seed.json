@@ -1,0 +1,1051 @@
+{
+	"$schema": "https://emdashcms.com/seed.schema.json",
+	"version": "1",
+	"meta": {
+		"name": "ASATECHID Commerce",
+		"description": "Storefront catalogue and education hub. Phase 0 scaffold with DEMO content only.",
+		"author": "ASATECHID"
+	},
+	"settings": {
+		"title": "ASATECHID Commerce",
+		"tagline": "Katalog produk dan pusat edukasi (DEMO)"
+	},
+	"collections": [
+		{
+			"slug": "posts",
+			"label": "Artikel",
+			"labelSingular": "Artikel",
+			"description": "Artikel editorial: panduan, catatan, dan penjelasan. Penulis memakai byline EmDash; kategori dan tag memakai taxonomy.",
+			"urlPattern": "/posts/{slug}",
+			"supports": [
+				"drafts",
+				"revisions",
+				"preview",
+				"scheduling",
+				"search",
+				"seo"
+			],
+			"titleField": "title",
+			"admin": {
+				"listColumns": [
+					"title"
+				]
+			},
+			"fields": [
+				{
+					"slug": "title",
+					"label": "Judul",
+					"type": "string",
+					"required": true,
+					"searchable": true
+				},
+				{
+					"slug": "featured_image",
+					"label": "Gambar utama",
+					"type": "image"
+				},
+				{
+					"slug": "content",
+					"label": "Konten",
+					"type": "portableText",
+					"searchable": true
+				},
+				{
+					"slug": "excerpt",
+					"label": "Ringkasan",
+					"type": "text",
+					"searchable": true
+				},
+				{
+					"slug": "related_posts",
+					"label": "Artikel terkait",
+					"type": "reference",
+					"validation": {
+						"targetCollection": "posts",
+						"multiple": true
+					}
+				}
+			]
+		},
+		{
+			"slug": "pages",
+			"label": "Pages",
+			"labelSingular": "Page",
+			"urlPattern": "/{slug}",
+			"supports": [
+				"drafts",
+				"revisions",
+				"preview",
+				"search",
+				"seo"
+			],
+			"fields": [
+				{
+					"slug": "title",
+					"label": "Title",
+					"type": "string",
+					"required": true,
+					"searchable": true
+				},
+				{
+					"slug": "content",
+					"label": "Content",
+					"type": "portableText",
+					"searchable": true
+				}
+			]
+		},
+		{
+			"slug": "brands",
+			"label": "Merek",
+			"labelSingular": "Merek",
+			"description": "Merek produk. Belum ada halaman publik pada fase ini.",
+			"routable": false,
+			"supports": [
+				"drafts",
+				"revisions"
+			],
+			"admin": {
+				"listColumns": [
+					"name"
+				]
+			},
+			"fields": [
+				{
+					"slug": "name",
+					"label": "Nama merek",
+					"type": "string",
+					"required": true,
+					"searchable": true
+				},
+				{
+					"slug": "description",
+					"label": "Deskripsi",
+					"type": "text"
+				},
+				{
+					"slug": "logo",
+					"label": "Logo",
+					"type": "image"
+				},
+				{
+					"slug": "website",
+					"label": "Situs web",
+					"type": "url"
+				}
+			]
+		},
+		{
+			"slug": "products",
+			"label": "Produk",
+			"labelSingular": "Produk",
+			"description": "Katalog produk. Harga, mata uang, ketersediaan, dan SKU hanya diisi bila datanya valid.",
+			"urlPattern": "/products/{slug}",
+			"supports": [
+				"drafts",
+				"revisions",
+				"preview",
+				"scheduling",
+				"search",
+				"seo"
+			],
+			"titleField": "title",
+			"admin": {
+				"listColumns": [
+					"title",
+					"availability",
+					"featured"
+				]
+			},
+			"fields": [
+				{
+					"slug": "title",
+					"label": "Nama produk",
+					"type": "string",
+					"required": true,
+					"searchable": true
+				},
+				{
+					"slug": "excerpt",
+					"label": "Ringkasan",
+					"type": "text",
+					"searchable": true
+				},
+				{
+					"slug": "description",
+					"label": "Deskripsi",
+					"type": "portableText",
+					"searchable": true
+				},
+				{
+					"slug": "featured_image",
+					"label": "Gambar utama",
+					"type": "image"
+				},
+				{
+					"slug": "brand",
+					"label": "Merek",
+					"type": "reference",
+					"validation": {
+						"targetCollection": "brands",
+						"multiple": false
+					}
+				},
+				{
+					"slug": "related_products",
+					"label": "Produk terkait",
+					"type": "reference",
+					"validation": {
+						"targetCollection": "products",
+						"multiple": true
+					}
+				},
+				{
+					"slug": "specifications",
+					"label": "Spesifikasi",
+					"type": "repeater",
+					"validation": {
+						"minItems": 0,
+						"maxItems": 20,
+						"subFields": [
+							{
+								"slug": "label",
+								"label": "Label",
+								"type": "string",
+								"required": true
+							},
+							{
+								"slug": "value",
+								"label": "Nilai",
+								"type": "text",
+								"required": true
+							}
+						]
+					}
+				},
+				{
+					"slug": "price",
+					"label": "Harga",
+					"type": "number",
+					"validation": {
+						"min": 0
+					}
+				},
+				{
+					"slug": "currency",
+					"label": "Mata uang (ISO 4217)",
+					"type": "string",
+					"validation": {
+						"maxLength": 3
+					}
+				},
+				{
+					"slug": "availability",
+					"label": "Ketersediaan",
+					"type": "select",
+					"validation": {
+						"options": [
+							"Tersedia",
+							"Tidak tersedia",
+							"Pre-order"
+						]
+					}
+				},
+				{
+					"slug": "sku",
+					"label": "SKU",
+					"type": "string"
+				},
+				{
+					"slug": "featured",
+					"label": "Produk pilihan",
+					"type": "boolean",
+					"indexed": true,
+					"defaultValue": false
+				}
+			]
+		}
+	],
+	"taxonomies": [
+		{
+			"name": "category",
+			"label": "Kategori Artikel",
+			"labelSingular": "Kategori Artikel",
+			"hierarchical": true,
+			"collections": [
+				"posts"
+			],
+			"terms": [
+				{
+					"slug": "general",
+					"label": "Umum"
+				},
+				{
+					"slug": "updates",
+					"label": "Pembaruan"
+				}
+			]
+		},
+		{
+			"name": "tag",
+			"label": "Tag Artikel",
+			"labelSingular": "Tag Artikel",
+			"hierarchical": false,
+			"collections": [
+				"posts"
+			],
+			"terms": [
+				{
+					"slug": "starter",
+					"label": "Pemula"
+				},
+				{
+					"slug": "example",
+					"label": "Contoh"
+				},
+				{
+					"slug": "panduan",
+					"label": "Panduan"
+				}
+			]
+		},
+		{
+			"name": "product_category",
+			"label": "Kategori Produk",
+			"labelSingular": "Kategori Produk",
+			"hierarchical": true,
+			"collections": [
+				"products"
+			],
+			"terms": [
+				{
+					"slug": "perangkat-demo",
+					"label": "Perangkat (DEMO)"
+				},
+				{
+					"slug": "aksesori-demo",
+					"label": "Aksesori (DEMO)"
+				}
+			]
+		}
+	],
+	"menus": [
+		{
+			"name": "primary",
+			"label": "Primary Navigation",
+			"items": [
+				{
+					"type": "custom",
+					"label": "Beranda",
+					"url": "/"
+				},
+				{
+					"type": "custom",
+					"label": "Produk",
+					"url": "/products"
+				},
+				{
+					"type": "custom",
+					"label": "Artikel",
+					"url": "/posts"
+				},
+				{
+					"type": "custom",
+					"label": "Tentang",
+					"url": "/about"
+				}
+			]
+		}
+	],
+	"widgetAreas": [
+		{
+			"name": "sidebar",
+			"label": "Sidebar",
+			"description": "Sidebar widget area",
+			"widgets": [
+				{
+					"type": "component",
+					"componentId": "core:categories",
+					"title": "Kategori"
+				},
+				{
+					"type": "component",
+					"componentId": "core:recent-posts",
+					"title": "Artikel terbaru",
+					"props": {
+						"count": 5
+					}
+				}
+			]
+		}
+	],
+	"bylines": [
+		{
+			"id": "byline-demo-tim",
+			"slug": "tim-demo",
+			"displayName": "Tim Demo ASATECHID",
+			"bio": "DEMO: profil penulis fiktif untuk menguji tampilan byline. Ganti dengan penulis sungguhan sebelum publikasi.",
+			"isGuest": false
+		}
+	],
+	"content": {
+		"pages": [
+			{
+				"id": "about",
+				"slug": "about",
+				"status": "published",
+				"data": {
+					"title": "About (DEMO)",
+					"content": [
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "DEMO CONTENT. This page is placeholder content created by the Phase 0 scaffold. Replace it with factual ASATECHID information before launch.",
+									"_key": "k1"
+								}
+							],
+							"_key": "k0"
+						}
+					]
+				}
+			}
+		],
+		"brands": [
+			{
+				"id": "brand-demo-satu",
+				"data": {
+					"name": "Merek Demo Satu",
+					"description": "DEMO: merek fiktif untuk menguji relasi produk. Ganti sebelum publikasi."
+				}
+			},
+			{
+				"id": "brand-demo-dua",
+				"data": {
+					"name": "Merek Demo Dua",
+					"description": "DEMO: merek fiktif untuk menguji relasi produk. Ganti sebelum publikasi."
+				}
+			}
+		],
+		"products": [
+			{
+				"id": "product-demo-beta",
+				"slug": "produk-demo-beta",
+				"status": "published",
+				"data": {
+					"title": "Produk Demo Beta",
+					"excerpt": "DEMO: contoh produk kedua untuk menguji kategori dan kartu produk. Harga dan ketersediaan belum diisi.",
+					"description": [
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Konten DEMO. Produk ini fiktif dan tidak mewakili barang yang dijual. Harga, stok, dan SKU sengaja dikosongkan agar UI menampilkan status yang jujur.",
+									"_key": "b1"
+								}
+							],
+							"_key": "b0"
+						}
+					],
+					"brand": "$ref:brand-demo-dua",
+					"specifications": [
+						{
+							"label": "Spesifikasi contoh",
+							"value": "Nilai placeholder — ganti dengan data aktual."
+						}
+					],
+					"featured": false
+				},
+				"taxonomies": {
+					"product_category": [
+						"aksesori-demo"
+					]
+				}
+			},
+			{
+				"id": "product-demo-gamma",
+				"slug": "produk-demo-gamma",
+				"status": "published",
+				"data": {
+					"title": "Produk Demo Gamma",
+					"excerpt": "DEMO: contoh produk ketiga untuk menguji daftar kategori dan produk terkait.",
+					"description": [
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Konten DEMO. Produk ini fiktif dan hanya dipakai untuk menguji tampilan katalog. Data bisnis yang sebenarnya belum tersedia.",
+									"_key": "g1"
+								}
+							],
+							"_key": "g0"
+						}
+					],
+					"brand": "$ref:brand-demo-satu",
+					"featured": false
+				},
+				"taxonomies": {
+					"product_category": [
+						"perangkat-demo"
+					]
+				}
+			},
+			{
+				"id": "product-demo-draft",
+				"slug": "produk-demo-draf",
+				"status": "draft",
+				"data": {
+					"title": "Produk Demo Draf (tidak boleh tampil)",
+					"excerpt": "DEMO draf: dipakai untuk memverifikasi bahwa produk berstatus draft tidak tampil di publik.",
+					"description": [
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Konten DEMO berstatus draft. Halaman ini tidak boleh dapat diakses publik sebelum dipublikasikan melalui CMS.",
+									"_key": "d1"
+								}
+							],
+							"_key": "d0"
+						}
+					],
+					"featured": false
+				},
+				"taxonomies": {
+					"product_category": [
+						"perangkat-demo"
+					]
+				}
+			},
+			{
+				"id": "product-demo-alpha",
+				"slug": "produk-demo-alpha",
+				"status": "published",
+				"data": {
+					"title": "Produk Demo Alpha",
+					"excerpt": "DEMO: contoh produk unggulan untuk menguji katalog, detail produk, merek, spesifikasi, dan produk terkait. Tidak ada harga atau stok yang diklaim.",
+					"description": [
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Konten DEMO. Produk ini fiktif dan hanya dipakai untuk menguji katalog, halaman detail, kategori, dan pencarian. Tidak ada harga, stok, atau SKU yang diklaim.",
+									"_key": "a1"
+								}
+							],
+							"_key": "a0"
+						},
+						{
+							"_type": "block",
+							"style": "h2",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Apa yang diuji",
+									"_key": "a3"
+								}
+							],
+							"_key": "a2"
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Halaman ini menguji tampilan relasi merek, tabel spesifikasi, produk terkait, dan status harga serta ketersediaan yang belum diisi.",
+									"_key": "a5"
+								}
+							],
+							"_key": "a4"
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Ganti seluruh data DEMO ini dengan informasi produk yang faktual sebelum publikasi.",
+									"_key": "a7"
+								}
+							],
+							"_key": "a6"
+						}
+					],
+					"brand": "$ref:brand-demo-satu",
+					"related_products": [
+						"$ref:product-demo-beta",
+						"$ref:product-demo-gamma"
+					],
+					"specifications": [
+						{
+							"label": "Spesifikasi contoh",
+							"value": "Nilai placeholder — ganti dengan data aktual."
+						},
+						{
+							"label": "Status data",
+							"value": "Belum tersedia."
+						}
+					],
+					"featured": true
+				},
+				"taxonomies": {
+					"product_category": [
+						"perangkat-demo"
+					]
+				}
+			}
+		],
+		"posts": [
+			{
+				"id": "post-panduan-demo",
+				"slug": "panduan-memilih-produk-demo",
+				"status": "published",
+				"data": {
+					"title": "Panduan Memilih Produk (DEMO)",
+					"excerpt": "DEMO: contoh artikel panduan untuk menguji struktur heading, daftar isi, penulis, kategori, dan artikel terkait. Bukan nasihat produk sungguhan.",
+					"content": [
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "DEMO CONTENT. Artikel ini fiktif dan hanya dipakai untuk menguji halaman editorial. Tidak ada klaim produk, harga, atau stok di dalamnya.",
+									"_key": "p1as"
+								}
+							],
+							"_key": "p1a"
+						},
+						{
+							"_type": "block",
+							"style": "h2",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Mulai dari kebutuhan",
+									"_key": "p1bs"
+								}
+							],
+							"_key": "p1b"
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Tuliskan dulu masalah yang ingin diselesaikan. Daftar kebutuhan yang singkat membuat perbandingan produk lebih mudah dan mengurangi risiko membeli fitur yang tidak terpakai.",
+									"_key": "p1cs"
+								}
+							],
+							"_key": "p1c"
+						},
+						[
+							{
+								"_type": "block",
+								"style": "normal",
+								"listItem": "bullet",
+								"level": 1,
+								"children": [
+									{
+										"_type": "span",
+										"text": "Catat fungsi utama yang benar-benar dibutuhkan.",
+										"_key": "p1ds0"
+									}
+								],
+								"_key": "p1d0"
+							},
+							{
+								"_type": "block",
+								"style": "normal",
+								"listItem": "bullet",
+								"level": 1,
+								"children": [
+									{
+										"_type": "span",
+										"text": "Tentukan batas anggaran sebelum melihat pilihan.",
+										"_key": "p1ds1"
+									}
+								],
+								"_key": "p1d1"
+							},
+							{
+								"_type": "block",
+								"style": "normal",
+								"listItem": "bullet",
+								"level": 1,
+								"children": [
+									{
+										"_type": "span",
+										"text": "Periksa apakah ada layanan purna jual yang jelas.",
+										"_key": "p1ds2"
+									}
+								],
+								"_key": "p1d2"
+							}
+						],
+						{
+							"_type": "block",
+							"style": "h2",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Periksa spesifikasi",
+									"_key": "p1es"
+								}
+							],
+							"_key": "p1e"
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Spesifikasi membantu membandingkan produk pada ukuran yang sama. Perhatikan satuan, kondisi pengukuran, dan apakah nilainya berlaku untuk seluruh varian.",
+									"_key": "p1fs"
+								}
+							],
+							"_key": "p1f"
+						},
+						{
+							"_type": "block",
+							"style": "h3",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Baca label dan satuan",
+									"_key": "p1gs"
+								}
+							],
+							"_key": "p1g"
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Angka tanpa satuan mudah disalahartikan. Jika satuan tidak dicantumkan, anggap informasi itu belum lengkap dan mintalah klarifikasi.",
+									"_key": "p1hs"
+								}
+							],
+							"_key": "p1h"
+						},
+						{
+							"_type": "block",
+							"style": "h2",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Catat pertanyaan sebelum membeli",
+									"_key": "p1is"
+								}
+							],
+							"_key": "p1i"
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Simpan daftar pertanyaan tentang garansi, ketersediaan suku cadang, dan waktu pengiriman. Pertanyaan yang terstruktur membuat komunikasi dengan penjual lebih efisien.",
+									"_key": "p1js"
+								}
+							],
+							"_key": "p1j"
+						}
+					]
+				},
+				"taxonomies": {
+					"category": [
+						"general"
+					],
+					"tag": [
+						"panduan"
+					]
+				},
+				"bylines": [
+					{
+						"byline": "byline-demo-tim",
+						"roleLabel": "Tim editorial (DEMO)"
+					}
+				]
+			},
+			{
+				"id": "post-catatan-demo",
+				"slug": "catatan-ketersediaan-produk-demo",
+				"status": "published",
+				"data": {
+					"title": "Catatan Ketersediaan Produk (DEMO)",
+					"excerpt": "DEMO: contoh artikel yang menjelaskan mengapa status ketersediaan bisa kosong dan bagaimana situs menampilkannya secara jujur.",
+					"content": [
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "DEMO CONTENT. Artikel ini menjelaskan aturan tampilan data di situs contoh. Semua contoh bersifat fiktif.",
+									"_key": "p2as"
+								}
+							],
+							"_key": "p2a"
+						},
+						{
+							"_type": "block",
+							"style": "h2",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Mengapa status bisa kosong",
+									"_key": "p2bs"
+								}
+							],
+							"_key": "p2b"
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Status ketersediaan bergantung pada data yang diberikan pemasok. Selama data itu belum diverifikasi, situs tidak menampilkan angka atau status apa pun.",
+									"_key": "p2cs"
+								}
+							],
+							"_key": "p2c"
+						},
+						{
+							"_type": "block",
+							"style": "h3",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Apa yang ditampilkan situs",
+									"_key": "p2ds"
+								}
+							],
+							"_key": "p2d"
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Halaman produk akan menampilkan keterangan bahwa harga atau ketersediaan belum tersedia. Pendekatan ini lebih aman daripada menebak nilai yang bisa menyesatkan pembeli.",
+									"_key": "p2es"
+								}
+							],
+							"_key": "p2e"
+						},
+						{
+							"_type": "block",
+							"style": "h2",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Langkah berikutnya",
+									"_key": "p2fs"
+								}
+							],
+							"_key": "p2f"
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Saat data resmi tersedia, admin memperbarui produk melalui CMS. Setelah disimpan dan dipublikasikan, halaman publik otomatis menampilkan nilai terbaru.",
+									"_key": "p2gs"
+								}
+							],
+							"_key": "p2g"
+						}
+					],
+					"related_posts": [
+						"$ref:post-panduan-demo"
+					]
+				},
+				"taxonomies": {
+					"category": [
+						"updates"
+					],
+					"tag": [
+						"example"
+					]
+				},
+				"bylines": [
+					{
+						"byline": "byline-demo-tim",
+						"roleLabel": "Tim editorial (DEMO)"
+					}
+				]
+			},
+			{
+				"id": "post-spesifikasi-demo",
+				"slug": "cara-membaca-spesifikasi-demo",
+				"status": "published",
+				"data": {
+					"title": "Cara Membaca Spesifikasi Produk (DEMO)",
+					"excerpt": "DEMO: contoh artikel teknis ringan untuk menguji heading bertingkat, tautan tag, dan blok kutipan.",
+					"content": [
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "DEMO CONTENT. Contoh ini tidak merujuk pada produk nyata dan tidak boleh dipakai sebagai spesifikasi teknis.",
+									"_key": "p3as"
+								}
+							],
+							"_key": "p3a"
+						},
+						{
+							"_type": "block",
+							"style": "h2",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Satuan dan toleransi",
+									"_key": "p3bs"
+								}
+							],
+							"_key": "p3b"
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Nilai teknis selalu punya satuan dan toleransi. Tanpa keduanya, sebuah angka hanya informasi setengah jadi.",
+									"_key": "p3cs"
+								}
+							],
+							"_key": "p3c"
+						},
+						{
+							"_type": "block",
+							"style": "blockquote",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Jika satu spesifikasi tidak dapat diverifikasi, tuliskan bahwa data belum tersedia.",
+									"_key": "p3ds"
+								}
+							],
+							"_key": "p3d"
+						},
+						{
+							"_type": "block",
+							"style": "h2",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Istilah yang sering membingungkan",
+									"_key": "p3es"
+								}
+							],
+							"_key": "p3e"
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Beberapa istilah dipakai berbeda antarprodusen. Selalu cocokkan definisi pada dokumen resmi, bukan pada ringkasan pemasaran.",
+									"_key": "p3fs"
+								}
+							],
+							"_key": "p3f"
+						},
+						{
+							"_type": "block",
+							"style": "h3",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Contoh penerapan",
+									"_key": "p3gs"
+								}
+							],
+							"_key": "p3g"
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Bandingkan dua produk hanya pada parameter yang diukur dengan metode sama. Jika metodenya berbeda, perbandingan langsung tidak adil.",
+									"_key": "p3hs"
+								}
+							],
+							"_key": "p3h"
+						},
+						{
+							"_type": "block",
+							"style": "h2",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Kesimpulan",
+									"_key": "p3is"
+								}
+							],
+							"_key": "p3i"
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Spesifikasi adalah alat bantu keputusan, bukan jaminan performa. Gunakan sebagai dasar pertanyaan lanjutan kepada penjual.",
+									"_key": "p3js"
+								}
+							],
+							"_key": "p3j"
+						}
+					],
+					"related_posts": [
+						"$ref:post-panduan-demo",
+						"$ref:post-catatan-demo"
+					]
+				},
+				"taxonomies": {
+					"category": [
+						"general"
+					],
+					"tag": [
+						"panduan",
+						"starter"
+					]
+				},
+				"bylines": [
+					{
+						"byline": "byline-demo-tim",
+						"roleLabel": "Tim editorial (DEMO)"
+					}
+				]
+			}
+		]
+	}
+}

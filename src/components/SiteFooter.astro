@@ -1,0 +1,119 @@
+---
+import Logo from "./Logo.astro";
+import type { MediaReference } from "../utils/site-identity";
+
+interface Props {
+	siteTitle: string;
+	siteTagline?: string;
+	siteLogo?: MediaReference | null;
+}
+
+const { siteTitle, siteTagline, siteLogo = null } = Astro.props;
+const year = new Date().getFullYear();
+---
+
+<footer class="site-footer">
+	<div class="container site-footer__inner">
+		<div class="site-footer__brand">
+			<Logo title={siteTitle} logo={siteLogo} />
+			{siteTagline && <p class="site-footer__tagline">{siteTagline}</p>}
+		</div>
+
+		<nav class="site-footer__nav" aria-label="Navigasi footer">
+			<h2 class="site-footer__heading">Jelajahi</h2>
+			<ul>
+				<li><a href="/">Beranda</a></li>
+				<li><a href="/products">Produk</a></li>
+				<li><a href="/posts">Artikel</a></li>
+				<li><a href="/about">Tentang</a></li>
+			</ul>
+		</nav>
+
+		<div class="site-footer__note">
+			<h2 class="site-footer__heading">Status</h2>
+			<p>
+				Scaffold tahap awal. Konten dan identitas visual masih placeholder dan
+				akan diganti sebelum peluncuran.
+			</p>
+		</div>
+	</div>
+
+	<div class="container site-footer__bottom">
+		<p>© {year} {siteTitle}. Semua hak dilindungi.</p>
+	</div>
+</footer>
+
+<style>
+	.site-footer {
+		padding-top: var(--space-12);
+		background: var(--color-surface);
+		border-top: 1px solid var(--color-border);
+		color: var(--color-ink-soft);
+		font-size: var(--text-sm);
+	}
+
+	.site-footer__inner {
+		display: grid;
+		gap: var(--space-10);
+		padding-bottom: var(--space-12);
+	}
+
+	.site-footer__tagline {
+		max-width: 22rem;
+		margin-top: var(--space-4);
+		margin-bottom: 0;
+		color: var(--color-muted);
+	}
+
+	.site-footer__heading {
+		margin: 0 0 var(--space-3);
+		font-size: var(--text-xs);
+		font-weight: 700;
+		letter-spacing: 0.1em;
+		text-transform: uppercase;
+		color: var(--color-muted);
+	}
+
+	.site-footer__nav ul {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-2);
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+
+	.site-footer__nav a {
+		color: var(--color-ink-soft);
+		text-decoration: none;
+	}
+
+	.site-footer__nav a:hover {
+		color: var(--color-accent);
+		text-decoration: underline;
+	}
+
+	.site-footer__note p {
+		max-width: 24rem;
+		margin: 0;
+		color: var(--color-muted);
+	}
+
+	.site-footer__bottom {
+		padding-block: var(--space-5);
+		border-top: 1px solid var(--color-border);
+		color: var(--color-muted);
+		font-size: var(--text-xs);
+	}
+
+	.site-footer__bottom p {
+		margin: 0;
+	}
+
+	@media (min-width: 48rem) {
+		.site-footer__inner {
+			grid-template-columns: 1.4fr 1fr 1.4fr;
+			gap: var(--space-12);
+		}
+	}
+</style>

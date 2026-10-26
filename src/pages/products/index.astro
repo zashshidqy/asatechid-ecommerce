@@ -1,0 +1,95 @@
+---
+import {
+	getEmDashCollection,
+	getTaxonomyTermsWithCacheHint,
+} from "emdash";
+import Base from "../../layouts/Base.astro";
+import Container from "../../components/Container.astro";
+import Breadcrumbs from "../../components/Breadcrumbs.astro";
+import EmptyState from "../../components/EmptyState.astro";
+import ProductGrid from "../../components/ProductGrid.astro";
+import TaxonomyNav from "../../components/TaxonomyNav.astro";
+
+const cursor = Astro.url.searchParams.get("cursor") || undefined;
+
+const { entries: products, cacheHint, nextCursor, error } =
+	await getEmDashCollection("products", {
+		orderBy: { published_at: "desc" },
+		limit: 12,
+		cursor,
+	});
+
+if (error) {
+	console.error("Failed to load products:", error);
+	return new Response("Tidak dapat memuat produk.", { status: 500 });
+}
+
+const termsResult = await getTaxonomyTermsWithCacheHint("product_category", {
+	includeCounts: true,
+});
+
+if (Astro.cache?.enabled) {
+	Astro.cache.set(cacheHint);
+	Astro.cache.set(termsResult.cacheHint);
+}
+---
+
+<Base title="Produk" description="Katalog produk ASATECHID Commerce.">
+	<Container>
+		<Breadcrumbs
+			items={[{ label: "Beranda", href: "/" }, { label: "Produk" }]}
+		/>
+
+		<header class="page-head">
+			<p class="page-head__eyebrow">Katalog</p>
+			<h1>Produk</h1>
+			<p class="page-head__lead">
+				Jelajahi produk berdasarkan kategori. Harga dan ketersediaan hanya
+				ditampilkan jika datanya sudah diisi.
+			</p>
+		</header>
+
+		<TaxonomyNav
+			terms={termsResult.data}
+			hrefBase="/products/category"
+			label="Kategori produk"
+			showCounts
+		/>
+
+		{
+			products.length === 0 ? (
+				<EmptyState
+					title="Belum ada produk"
+					description="Produk yang dipublikasikan melalui CMS akan tampil di halaman ini."
+				/>
+			) : (
+				<ProductGrid products={products} />
+			)
+		}
+
+		<nav class="pagination" aria-label="Navigasi halaman produk">
+			{cursor && (
+				<a class="btn btn--secondary btn--sm" href="/products">
+					Halaman pertama
+				</a>
+			)}
+			{nextCursor && (
+				<a
+					class="btn btn--secondary btn--sm"
+					href={`/products?cursor=${encodeURIComponent(nextCursor)}`}
+				>
+					Halaman berikutnya
+				</a>
+			)}
+		</nav>
+	</Container>
+</Base>
+
+<style>
+	.pagination {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-3);
+		margin-top: var(--space-10);
+	}
+</style>

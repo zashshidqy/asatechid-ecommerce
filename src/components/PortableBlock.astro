@@ -1,0 +1,74 @@
+---
+/**
+ * Portable Text block renderer.
+ *
+ * EmDash ships its own `Block` component, but `emdash/ui` re-exports the
+ * astro-portabletext `Block` *type* under the same name, so it cannot be
+ * imported as a value. This component replicates that markup (h1–h6,
+ * blockquote, paragraph) including the `textAlign` allowlist, and adds the
+ * server-generated heading anchor from `annotateHeadings()`.
+ */
+import type { BlockProps } from "astro-portabletext/types";
+
+type TextAlignedNode = BlockProps["node"] & {
+	textAlign?: string;
+	_tocId?: string;
+};
+type Props = Omit<BlockProps, "node"> & { node: TextAlignedNode };
+
+const props = Astro.props as Props;
+const { node, index: _index, isInline: _isInline, ...attrs } = props;
+
+const style = node.style;
+
+const Tag =
+	style === "h1"
+		? "h1"
+		: style === "h2"
+			? "h2"
+			: style === "h3"
+				? "h3"
+				: style === "h4"
+					? "h4"
+					: style === "h5"
+						? "h5"
+						: style === "h6"
+							? "h6"
+							: style === "blockquote"
+								? "blockquote"
+								: "p";
+
+// Allowlist only: Portable Text data must never inject arbitrary class names.
+// `left` is the editor default and stays class-free.
+const ALIGN_CLASSES: Record<string, string> = {
+	center: "has-text-align-center",
+	right: "has-text-align-right",
+	justify: "has-text-align-justify",
+};
+
+const alignClass =
+	node.textAlign && Object.hasOwn(ALIGN_CLASSES, node.textAlign)
+		? ALIGN_CLASSES[node.textAlign]
+		: undefined;
+
+const id = node._tocId;
+const elementAttrs = id ? { ...attrs, id } : attrs;
+---
+
+<Tag class={alignClass} {...elementAttrs}>
+	<slot />
+</Tag>
+
+<style>
+	.has-text-align-center {
+		text-align: center;
+	}
+
+	.has-text-align-right {
+		text-align: right;
+	}
+
+	.has-text-align-justify {
+		text-align: justify;
+	}
+</style>

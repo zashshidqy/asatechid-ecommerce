@@ -1,0 +1,155 @@
+---
+import type { ContentBylineCredit } from "emdash";
+
+interface Props {
+	bylines?: ContentBylineCredit[] | null;
+	/** inline: a single "Oleh …" line. stacked: avatar, name, role, and bio. */
+	layout?: "inline" | "stacked";
+	showBio?: boolean;
+	class?: string;
+}
+
+const {
+	bylines: bylinesProp,
+	layout = "inline",
+	showBio = false,
+	class: className,
+} = Astro.props;
+
+// A default parameter only covers `undefined`; content entries explicitly
+// type bylines as `| null`, so normalize both cases here.
+const bylines = bylinesProp ?? [];
+
+const WHITESPACE = /\s+/;
+
+const people = bylines.map(({ byline, roleLabel }) => ({
+	name: byline.displayName,
+	role: roleLabel,
+	bio: byline.bio,
+	avatarUrl: byline.avatarStorageKey
+		? `/_emdash/api/media/file/${byline.avatarStorageKey
+				.split("/")
+				.map(encodeURIComponent)
+				.join("/")}`
+		: null,
+	initials: byline.displayName
+		.split(WHITESPACE)
+		.filter(Boolean)
+		.slice(0, 2)
+		.map((word) => [...word][0]?.toUpperCase() ?? "")
+		.join(""),
+}));
+
+const names = people.map((person) => person.name);
+const nameList =
+	names.length <= 1
+		? names.join("")
+		: `${names.slice(0, -1).join(", ")} dan ${names[names.length - 1]}`;
+---
+
+{
+	people.length > 0 && layout === "inline" && (
+		<p class:list={["byline", className]}>
+			<span class="byline__label">Oleh</span> <span>{nameList}</span>
+		</p>
+	)
+}
+
+{
+	people.length > 0 && layout === "stacked" && (
+		<ul class:list={["author-list", className]}>
+			{people.map((person) => (
+				<li class="author">
+					{person.avatarUrl ? (
+						<img
+							class="author__avatar"
+							src={person.avatarUrl}
+							alt=""
+							width="48"
+							height="48"
+							loading="lazy"
+							decoding="async"
+						/>
+					) : (
+						<span class="author__avatar author__avatar--initials" aria-hidden="true">
+							{person.initials}
+						</span>
+					)}
+					<div class="author__text">
+						<p class="author__name">{person.name}</p>
+						{person.role && <p class="author__role">{person.role}</p>}
+						{showBio && person.bio && <p class="author__bio">{person.bio}</p>}
+					</div>
+				</li>
+			))}
+		</ul>
+	)
+}
+
+<style>
+	.byline {
+		margin: 0;
+		color: var(--color-muted);
+		font-size: var(--text-sm);
+	}
+
+	.byline__label {
+		color: var(--color-ink-soft);
+	}
+
+	.author-list {
+		display: grid;
+		gap: var(--space-4);
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+
+	.author {
+		display: flex;
+		align-items: flex-start;
+		gap: var(--space-3);
+	}
+
+	.author__avatar {
+		flex-shrink: 0;
+		width: 3rem;
+		height: 3rem;
+		border-radius: 999px;
+		object-fit: cover;
+		background: var(--color-surface-muted);
+		border: 1px solid var(--color-border);
+	}
+
+	.author__avatar--initials {
+		display: grid;
+		place-items: center;
+		color: var(--color-ink-soft);
+		font-size: var(--text-sm);
+		font-weight: 650;
+		letter-spacing: 0.02em;
+	}
+
+	.author__text {
+		display: grid;
+		gap: var(--space-1);
+	}
+
+	.author__name {
+		margin: 0;
+		color: var(--color-ink);
+		font-weight: 650;
+	}
+
+	.author__role {
+		margin: 0;
+		color: var(--color-muted);
+		font-size: var(--text-sm);
+	}
+
+	.author__bio {
+		margin: 0;
+		color: var(--color-ink-soft);
+		font-size: var(--text-sm);
+	}
+</style>

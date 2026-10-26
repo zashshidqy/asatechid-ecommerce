@@ -1,0 +1,40 @@
+---
+import PostCard from "./PostCard.astro";
+import type { PostCardEntry } from "../utils/post";
+
+interface Props {
+	posts: PostCardEntry[];
+	headingLevel?: "h2" | "h3";
+	showAuthor?: boolean;
+	class?: string;
+}
+
+const {
+	posts,
+	headingLevel = "h2",
+	showAuthor = true,
+	class: className,
+} = Astro.props;
+---
+
+<ul class:list={["grid", "grid--cards", "post-grid", className]}>
+	{
+		posts.map((post) => (
+			<li>
+				<PostCard
+					post={post}
+					headingLevel={headingLevel}
+					showAuthor={showAuthor}
+				/>
+			</li>
+		))
+	}
+</ul>
+
+<style>
+	.post-grid {
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+</style>

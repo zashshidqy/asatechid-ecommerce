@@ -1,0 +1,15 @@
+---
+interface Props {
+	title: string;
+	description?: string;
+	headingLevel?: "h1" | "h2";
+}
+
+const { title, description, headingLevel: Heading = "h2" } = Astro.props;
+---
+
+<div class="empty-state">
+	<Heading>{title}</Heading>
+	{description && <p>{description}</p>}
+	<slot />
+</div>
