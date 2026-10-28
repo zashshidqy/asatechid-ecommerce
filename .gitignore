@@ -4,6 +4,12 @@ dist
 .emdash/migrations.json
 uploads
 
+# Local SQLite database (EmDash dev)
+data.db
+data.db-shm
+data.db-wal
+data.db.bak-*
+
 # Environment
 .env
 .env.*
