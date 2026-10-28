@@ -463,3 +463,22 @@ Konten publik Bahasa Indonesia (`<html lang="id">`, format tanggal `id-ID`). Mul
 - Reset user menghapus seluruh baris `users` (termasuk passkey), tetapi tidak menyentuh koleksi/konten/media.
 - Diagnosis 401 pada create tidak boleh disimpulkan sebagai bug otorisasi kode sebelum dev server di-restart dan sesi diuji ulang.
 
+## ADR-033 — DESIGN.md sebagai acuan visual, bukan brand atau data
+
+**Status:** diterima (Phase 8, 2026-10-28)
+
+**Konteks:** `docs/DESIGN.md` mendeskripsikan homepage bergaya "Technova" lengkap dengan nama produk, harga, dan promo contoh. Dokumen itu tidak memuat brand guideline resmi ASATECHID dan sebagian isinya bertentangan dengan `docs/AGENTS.md` §5 (gradient dekoratif, sparkle, animasi) serta larangan mengarang produk/harga/brand.
+
+**Keputusan:**
+- DESIGN.md dipakai sebagai acuan **visual dan struktural** (palet, tipografi, spacing, urutan section); istilah "Technova" tidak dipakai di UI, metadata, atau kode.
+- Semua nama produk, merek, harga, dan angka diskon di DESIGN.md dianggap placeholder dan **tidak** dimasukkan ke kode maupun seed.
+- Kartu produk memakai placeholder yang jujur: `MediaPlaceholder` bertanda DEMO, harga `—`/“Harga belum tersedia”, harga coret hanya bila `compareAtPrice` terisi.
+- Gradient dibatasi pada hero dan banner promo; sparkle/animasi ringan dan wajib menghormati `prefers-reduced-motion`.
+- Banner promo dan quick category tidak mengarang konten: dirender hanya bila ada sumber data CMS, selain itu section disembunyikan atau memakai empty state.
+- Cart dan wishlist tidak menampilkan angka/total palsu sebelum checkout dan penyimpanan tersedia.
+
+**Konsekuensi:**
+- Warna dan font dari DESIGN.md tetap provisional; jika brand guideline resmi terbit, token di `src/styles/tokens.css` harus diganti dan kontras diuji ulang.
+- Section beranda bisa tampak lebih kosong dari mockup sampai data produk dan promo tersedia; ini disengaja.
+- Menambah konten promo nyata memerlukan keputusan model data (site setting atau collection), yang dicatat sebagai open item Phase 8.
+

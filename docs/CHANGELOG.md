@@ -2,6 +2,20 @@
 
 Format ringkas per fase. Tanggal memakai ISO (YYYY-MM-DD).
 
+## 2026-10-28 — Perencanaan Phase 8: storefront homepage sesuai DESIGN.md
+
+### Added
+- `docs/TODO.md` — Phase 8 baru (homepage sesuai `docs/DESIGN.md`) dengan keputusan 8.0, token, komponen, section, a11y, dan verifikasi; Phase 8 lama (full checkout) digeser menjadi Phase 9.
+- `docs/TODO.md` — blocker data baru: brand guideline provisional dan konten promo banner.
+- `docs/DECISIONS.md` — ADR-033: DESIGN.md sebagai acuan visual, bukan brand/data.
+
+### Changed
+- Brand storefront ditetapkan **ASATECHID**; nama "Technova" pada DESIGN.md tidak dipakai.
+- Nama produk, merek, harga, dan angka promo dari DESIGN.md dinyatakan placeholder; kartu memakai `MediaPlaceholder` dan harga “belum tersedia”.
+
+### Verified
+- Hanya dokumentasi yang berubah; belum ada kode aplikasi yang disentuh. `npm run typecheck` / `npm test` / `npm run build` tidak dijalankan ulang karena tidak ada perubahan kode.
+
 ## 2026-10-28 — Admin lokal: passkey asli + perbaikan 401 saat menyimpan konten
 
 ### Changed

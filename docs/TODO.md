@@ -237,12 +237,81 @@ Catatan Phase 1:
 - Bundle admin >500 kB tetap warning Vite; bukan halaman publik.
 - Target Cloudflare belum divalidasi; konfigurasi saat ini Node + SQLite + storage lokal.
 
-## Phase 8 — Full checkout (conditional)  ⬜
+## Phase 8 — Storefront homepage sesuai `docs/DESIGN.md`  ⬜
+
+Rencana disetujui 2026-10-28. `docs/DESIGN.md` dipakai sebagai **acuan visual** (palet, tipografi, spacing, urutan section), **bukan** sumber brand maupun data. Lihat ADR-033.
+
+### 8.0 Keputusan yang mengikat
+
+- [x] Brand storefront: **ASATECHID**. Nama "Technova" pada `docs/DESIGN.md` **tidak dipakai** di UI, metadata, `package.json`, atau nama komponen.
+- [x] Nama produk, harga, SKU, merek, dan angka promo dari DESIGN.md **tidak boleh masuk kode** (Samsung, AppIDe, Taka Altra, MacBook Air, Neuled, YOS, Largo, Bobos, `$1,150`, `$950`, "Save up to 35%", dll.).
+- [x] Semua kartu memakai placeholder jujur: gambar `MediaPlaceholder` bertanda DEMO (rasio 4:3), harga `—` / "Harga belum tersedia", harga coret hanya bila field `compareAtPrice` benar-benar terisi.
+- [x] Seed `seed/seed.json` **tidak ditambah** entri demo baru pada fase ini.
+- [ ] 4 quick category (Best Sellers / New Arrivals / Top Rated / On Sale): diturunkan dari taxonomy `product_category` bila memungkinkan; jika tidak ada sumber data yang sah, section disembunyikan (bukan label karangan).
+- [ ] Sumber konten promo banner: site setting baru, collection `promos`, atau section tidak dirender sampai admin mengisi. Default: kosong.
+- [ ] Perilaku cart & wishlist: nonaktif dengan label jelas sampai checkout/penyimpanan ada. Tidak boleh badge `0`, total `$0`, atau hati yang seolah menyimpan sesuatu.
+- [ ] Font display Inter/Plus Jakarta Sans hanya jika di-self-host; jika tidak, tetap system stack (tanpa request jaringan).
+
+### 8.1 Token desain
+
+- [ ] `src/styles/tokens.css`: tambah token warna dari DESIGN.md sebagai **provisional** — primary `#2f5fd9`, primary-dark `#1f4bb8`, primary-light `#5b9bf0`, accent `#f59a3b`, background `#eef1fa`, surface, ink 3 level, border `#e5e8f0`, gradient promo/hero.
+- [ ] Tambah token radius banner (14px), shadow kartu `0 2px 12px rgba(40,60,120,.06)`, dan spacing section.
+- [ ] Pastikan kontras tiap pasangan teks/latar ≥ AA; perbarui `src/lib/design/contrast.test.ts`.
+- [ ] Jangan hapus token lama sebelum semua komponen dimigrasikan; hindari nilai warna duplikat di komponen.
+
+### 8.2 Primitif komponen
+
+- [ ] Varian `Badge` (accent/biru), `Button` pill secondary, `IconButton` panah carousel.
+- [ ] `SectionHead` dengan slot aksi (link "Lihat semua" atau tab filter).
+- [ ] `FilterTabs` berbasis tautan `?kategori=` (crawlable, tanpa state klien wajib).
+- [ ] `PromoBanner` + `QuickCategoryCard` (dipakai ulang).
+- [ ] `MediaPlaceholder` bertanda DEMO dengan rasio tetap (mencegah layout shift).
+
+### 8.3 Section beranda (urutan DESIGN.md §5)
+
+- [ ] Top bar + header: menu Home/Shop/Blog/Contact, search (LiveSearch), user, cart. Tanpa checkout, cart tidak menampilkan total palsu.
+- [ ] Hero carousel 3 slide (gradient + sparkle CSS): dot pagination, panah, auto-slide 5s yang berhenti saat hover/focus, `prefers-reduced-motion`, slide pertama tetap tampil tanpa JS.
+- [ ] Quick category cards (4 kartu) sesuai keputusan 8.0.
+- [ ] Featured Products + tab filter + slot banner promo.
+- [ ] Just Arrived (produk terbaru dari CMS) + slot banner diskon.
+- [ ] Category banners 3 kolom dari kategori nyata.
+- [ ] Featured Products carousel baris 2 (scroll-snap, panah, keyboard).
+
+### 8.4 Product card
+
+- [ ] Badge kategori + harga coret hanya bila valid.
+- [ ] Wishlist sesuai keputusan 8.0 (aktif + tersimpan, atau dihapus).
+- [ ] Hover lift tanpa menggeser layout; fokus keyboard tetap terlihat.
+
+### 8.5 Kualitas
+
+- [ ] Responsif 390 / 768 / 1280 tanpa overflow.
+- [ ] A11y: satu `h1`, kontrol carousel berlabel, target sentuh ≥ 44px, kontras AA, reduced-motion, urutan heading tanpa lompatan.
+- [ ] Gambar/placeholder memakai `width`/`height` dan `loading` yang tepat.
+
+### 8.6 Verifikasi & dokumentasi
+
+- [ ] `npm run typecheck` 0 error / 0 warning / 0 hint.
+- [ ] `npm test` lulus (termasuk uji kontras token baru).
+- [ ] `npm run build` sukses dan `npm run audit:site` PASS.
+- [ ] Grep `src/` memastikan tidak ada string terlarang: `Technova`, `MacBook`, `Samsung`, `AppIDe`, `Taka Altra`, `Neuled`, `YOS`, `Largo`, `Bobos`, `$1,150`, `$950`, `35%`.
+- [ ] Screenshot 3 breakpoint disimpan sebagai bukti.
+- [ ] Perbarui `docs/CHANGELOG.md` dan `docs/DECISIONS.md`.
+
+### Catatan/limitasi Phase 8
+
+- DESIGN.md belum menjadi brand guideline resmi; token tetap provisional dan dapat diganti.
+- DESIGN.md melanggar sebagian aturan desain `docs/AGENTS.md` §5 (gradient dekoratif, sparkle). Implementasi membatasi gradient hanya pada hero/promo banner dan tidak memakai animasi berat.
+- Cart, checkout, dan pembayaran tetap di luar lingkup (Phase 9 dan seterusnya).
+- Jika data produk belum ada, section yang bergantung pada produk harus menampilkan empty state, bukan kartu palsu.
+
+## Phase 9 — Full checkout (conditional)  ⬜
 
 ## Blocker data yang belum tersedia (jangan dikarang)
 
 - Nama produk, SKU, harga, stok, kategori final, merek.
 - Domain produksi, nomor WhatsApp, email/alamat kontak.
-- Brand guideline (warna/font/logo resmi).
+- Brand guideline (warna/font/logo resmi). Nilai pada `docs/DESIGN.md` masih provisional.
+- Konten promo (judul, gambar, angka diskon) untuk banner beranda.
 - Provider pembayaran, ongkir, pajak, kebijakan retur.
 - Target deployment final (Node vs Cloudflare).
