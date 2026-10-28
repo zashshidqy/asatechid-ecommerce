@@ -2,6 +2,12 @@
 
 Format ringkas per fase. Tanggal memakai ISO (YYYY-MM-DD).
 
+## 2026-10-28 — Dokumentasi visual beranda
+
+### Added
+- `docs/screenshots/home-desktop-2026-10-28.png` dan `home-mobile-2026-10-28.png` — screenshot beranda hasil implementasi `src/pages/index.astro` (desktop 1440px, mobile 390px @2x) sebagai bukti visual di repo.
+- `docs/DESIGN.md` — bagian "Preview implementasi" menautkan kedua screenshot.
+
 ## 2026-10-28 — Phase 8: storefront homepage sesuai DESIGN.md
 
 ### Added

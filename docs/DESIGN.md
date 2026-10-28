@@ -7,6 +7,19 @@
 - **Mood:** Fresh, teknologi, tepercaya, ramah, minimalis
 - **Vibe kata kunci:** soft gradient, rounded cards, white space lega, biru elektrik
 
+### Preview implementasi (2026-10-28)
+
+Screenshot beranda hasil implementasi di `src/pages/index.astro` (data DEMO,
+dev server lokal):
+
+| Viewport | File |
+|---|---|
+| Desktop 1440px | [`screenshots/home-desktop-2026-10-28.png`](screenshots/home-desktop-2026-10-28.png) |
+| Mobile 390px (2x) | [`screenshots/home-mobile-2026-10-28.png`](screenshots/home-mobile-2026-10-28.png) |
+
+Screenshot ini dokumentasi visual, bukan aset produksi. Perbarui bila
+komponen/beranda berubah signifikan.
+
 ---
 
 ## 2. Color Palette
