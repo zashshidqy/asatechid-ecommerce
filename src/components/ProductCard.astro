@@ -2,6 +2,7 @@
 import { Image } from "emdash/ui";
 import Card from "./Card.astro";
 import Badge from "./Badge.astro";
+import MediaPlaceholder from "./MediaPlaceholder.astro";
 import {
 	availabilityLabel,
 	formatProductPrice,
@@ -12,29 +13,52 @@ import {
 interface Props {
 	product: ProductCardEntry;
 	headingLevel?: "h2" | "h3";
+	badge?: { label: string; tone?: "accent" | "highlight" | "soft" };
+	showExcerpt?: boolean;
 }
 
-const { product, headingLevel = "h2" } = Astro.props;
+const {
+	product,
+	headingLevel = "h2",
+	badge,
+	showExcerpt = true,
+} = Astro.props;
 const Heading = headingLevel;
 const image = product.data.featured_image;
 const categories = getProductCategories(product.data.terms);
 const price = formatProductPrice(product.data.price, product.data.currency);
+const compareAt = formatProductPrice(
+	product.data.compare_at_price,
+	product.data.currency,
+);
+const showCompareAt =
+	compareAt !== null &&
+	product.data.compare_at_price != null &&
+	product.data.price != null &&
+	product.data.compare_at_price > product.data.price;
 const availability = availabilityLabel(product.data.availability);
 ---
 
 <Card>
 	<div class="card__media" {...(product.edit?.featured_image ?? {})}>
-		{
-			image ? (
-				<Image image={image} />
-			) : (
-				<div class="product-card__placeholder">
-					<span class="product-card__placeholder-label">
-						Gambar belum tersedia
-					</span>
-				</div>
-			)
-		}
+		<div class="product-card__media">
+			{
+				image ? (
+					<Image image={image} />
+				) : (
+					<MediaPlaceholder
+						ratio="4:3"
+						label="Gambar produk"
+						class="product-card__placeholder"
+					/>
+				)
+			}
+			{badge && (
+				<span class="product-card__badge">
+					<Badge tone={badge.tone ?? "accent"}>{badge.label}</Badge>
+				</span>
+			)}
+		</div>
 	</div>
 	<div class="card__body">
 		{
@@ -52,63 +76,84 @@ const availability = availabilityLabel(product.data.availability);
 			)
 		}
 
-		<Heading class="card__title">
+		<Heading class="card__title product-card__title">
 			<a href={`/products/${product.id}`}>{product.data.title}</a>
 		</Heading>
 
 		{
-			product.data.excerpt && (
+			showExcerpt && product.data.excerpt && (
 				<p class="card__excerpt" {...product.edit?.excerpt}>
 					{product.data.excerpt}
 				</p>
 			)
 		}
 
-		{
-			(price || availability) && (
-				<div class="product-card__meta">
-					{price && <span class="product-card__price">{price}</span>}
-					{availability && (
-						<Badge
-							tone={
-								availability === "Tersedia"
-									? "accent"
-									: availability === "Pre-order"
-										? "default"
-										: "muted"
-							}
-						>
-							{availability}
-						</Badge>
-					)}
-				</div>
-			)
-		}
+		<div class="product-card__meta">
+			{
+				price ? (
+					<span class="product-card__prices">
+						<span class="product-card__price">{price}</span>
+						{showCompareAt && (
+							<s class="product-card__compare" aria-label="Harga sebelum diskon">
+								{compareAt}
+							</s>
+						)}
+					</span>
+				) : (
+					<span class="product-card__price product-card__price--missing">
+						Harga belum tersedia
+					</span>
+				)
+			}
+			{availability && (
+				<Badge
+					tone={
+						availability === "Tersedia"
+							? "accent"
+							: availability === "Pre-order"
+								? "default"
+								: "muted"
+					}
+				>
+					{availability}
+				</Badge>
+			)}
+		</div>
 	</div>
 </Card>
 
 <style>
-	.product-card__placeholder {
-		display: flex;
-		align-items: center;
-		justify-content: center;
+	.product-card__media {
+		position: relative;
 		height: 100%;
-		padding: var(--space-4);
-		background: var(--color-surface-muted);
 	}
 
-	.product-card__placeholder-label {
-		color: var(--color-muted);
-		font-size: var(--text-xs);
-		font-weight: 600;
-		letter-spacing: 0.04em;
-		text-transform: uppercase;
+	.product-card__media :global(img) {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+	}
+
+	.product-card__placeholder {
+		height: 100%;
+		border: 0;
+		border-radius: 0;
+	}
+
+	.product-card__badge {
+		position: absolute;
+		top: var(--space-3);
+		left: var(--space-3);
 	}
 
 	.product-card__categories {
 		display: flex;
 		flex-wrap: wrap;
 		gap: var(--space-2);
+	}
+
+	.product-card__title {
+		font-size: var(--text-lg);
 	}
 
 	.product-card__meta {
@@ -120,9 +165,27 @@ const availability = availabilityLabel(product.data.availability);
 		padding-top: var(--space-2);
 	}
 
+	.product-card__prices {
+		display: inline-flex;
+		flex-wrap: wrap;
+		align-items: baseline;
+		gap: var(--space-2);
+	}
+
 	.product-card__price {
 		color: var(--color-ink);
 		font-size: var(--text-base);
-		font-weight: 650;
+		font-weight: 700;
+	}
+
+	.product-card__price--missing {
+		color: var(--color-muted);
+		font-size: var(--text-sm);
+		font-weight: 600;
+	}
+
+	.product-card__compare {
+		color: var(--color-muted);
+		font-size: var(--text-xs);
 	}
 </style>

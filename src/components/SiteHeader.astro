@@ -6,12 +6,14 @@ import type { MediaReference } from "../utils/site-identity";
 
 interface Props {
 	siteTitle: string;
+	siteTagline?: string;
 	siteLogo?: MediaReference | null;
 	searchCollections?: string[];
 }
 
 const {
 	siteTitle,
+	siteTagline = "",
 	siteLogo = null,
 	searchCollections = ["products", "posts", "pages"],
 } = Astro.props;
@@ -38,6 +40,20 @@ function isActive(url: string): boolean {
 ---
 
 <header class="site-header">
+	<div class="top-bar">
+		<div class="container top-bar__inner">
+			<p class="top-bar__note">{siteTagline}</p>
+			<ul class="top-bar__list">
+				<li><a href="/products">Katalog</a></li>
+				<li><a href="/posts">Artikel</a></li>
+				<li>
+					<span class="top-bar__status" title="Checkout belum tersedia">
+						Keranjang belum tersedia
+					</span>
+				</li>
+			</ul>
+		</div>
+	</div>
 	<div class="container site-header__inner">
 		<Logo title={siteTitle} logo={siteLogo} />
 
@@ -68,6 +84,30 @@ function isActive(url: string): boolean {
 					<span slot="no-results">Tidak ada hasil.</span>
 				</LiveSearch>
 			</div>
+
+			<button
+				type="button"
+				class="icon-btn site-header__cart"
+				disabled
+				title="Keranjang belum tersedia"
+				aria-label="Keranjang belum tersedia"
+			>
+				<svg
+					viewBox="0 0 24 24"
+					width="20"
+					height="20"
+					fill="none"
+					stroke="currentColor"
+					stroke-width="1.5"
+					stroke-linecap="round"
+					stroke-linejoin="round"
+					aria-hidden="true"
+				>
+					<path d="M3 4h2l2.4 10.4a2 2 0 002 1.6h7.2a2 2 0 002-1.6L20 7H6" />
+					<circle cx="9.5" cy="19" r="1.3" />
+					<circle cx="17" cy="19" r="1.3" />
+				</svg>
+			</button>
 
 			<details class="nav-disclosure">
 				<summary class="btn btn--secondary btn--sm">Menu</summary>
@@ -106,6 +146,55 @@ function isActive(url: string): boolean {
 		z-index: 10;
 		background: var(--color-surface);
 		border-bottom: 1px solid var(--color-border);
+	}
+
+	.top-bar {
+		background: var(--color-surface-muted);
+		border-bottom: 1px solid var(--color-border);
+	}
+
+	.top-bar__inner {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		justify-content: space-between;
+		gap: var(--space-1) var(--space-4);
+		padding-block: var(--space-1);
+	}
+
+	.top-bar__note {
+		margin: 0;
+		color: var(--color-muted);
+		font-size: 0.6875rem;
+		font-weight: 600;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+	}
+
+	.top-bar__list {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: var(--space-4);
+		margin: 0;
+		padding: 0;
+		list-style: none;
+		font-size: 0.6875rem;
+	}
+
+	.top-bar a {
+		color: var(--color-ink-soft);
+		font-weight: 600;
+		text-decoration: none;
+	}
+
+	.top-bar a:hover {
+		color: var(--color-accent-hover);
+		text-decoration: underline;
+	}
+
+	.top-bar__status {
+		color: var(--color-muted);
 	}
 
 	.site-header__inner {
@@ -219,10 +308,4 @@ function isActive(url: string): boolean {
 		}
 	}
 </style>
-
-<script nonce={Astro.locals.cspNonce}>
-	import { initSiteHeader } from "../scripts/site-header";
-
-	initSiteHeader();
-</script>
 

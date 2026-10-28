@@ -27,6 +27,15 @@ export default defineConfig({
 		layout: "constrained",
 		responsiveStyles: true,
 	},
+	// Astro meng-inline chunk script kecil (< assetsInlineLimit) ke HTML.
+	// Inline script tidak membawa nonce, sehingga diblokir CSP publik
+	// (`script-src 'self' 'nonce-…'`). Nonaktifkan inlining agar script
+	// diemisi sebagai modul eksternal `/_astro/*.js` (ADR-034).
+	vite: {
+		build: {
+			assetsInlineLimit: 0,
+		},
+	},
 	integrations: [
 		react(),
 		emdash({

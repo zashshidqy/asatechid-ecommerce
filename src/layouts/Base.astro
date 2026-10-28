@@ -114,6 +114,7 @@ const pageCtx = createPublicPageContext({
 
 		<SiteHeader
 			siteTitle={siteTitle}
+			siteTagline={siteTagline}
 			siteLogo={siteLogo}
 			searchCollections={["products", "posts", "pages"]}
 		/>
@@ -129,5 +130,9 @@ const pageCtx = createPublicPageContext({
 		/>
 
 		<EmDashBodyEnd page={pageCtx} />
+
+		<script>
+			import "../scripts/public-client";
+		</script>
 	</body>
 </html>

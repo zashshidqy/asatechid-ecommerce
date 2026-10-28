@@ -1,7 +1,8 @@
 /*
  * Design tokens — PROVISIONAL.
  * Warna, font, dan skala di bawah ini adalah placeholder yang dapat diganti.
- * Belum ada brand guideline resmi ASATECHID, jadi jangan anggap ini identitas final.
+ * Belum ada brand guideline resmi ASATECHID, jadi jangan anggap ini identitas
+ * final. Palet mengikuti docs/DESIGN.md sebagai acuan visual (ADR-033).
  */
 
 :root {
@@ -11,21 +12,36 @@
 	--font-body: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 	--font-display: var(--font-body);
 
-	/* Palette */
-	--color-bg: #f6f5f2;
-	--color-surface: #ffffff;
-	--color-surface-muted: #ecebe6;
-	--color-ink: #15181a;
-	--color-ink-soft: #3d4348;
-	--color-muted: #63696e;
-	--color-border: #d9d7d0;
-	--color-border-strong: #b6b3aa;
-	--color-accent: #14584a;
-	--color-accent-hover: #0e463a;
+	/* Palette — primary */
+	--color-accent: #2f5fd9;
+	--color-accent-hover: #1f4bb8;
 	--color-accent-contrast: #ffffff;
+	--color-accent-soft: #e4ecfb;
+	--color-accent-light: #5b9bf0;
+
+	/* Palette — accent sekunder (latar badge/ikon; teks selalu --color-ink) */
+	--color-highlight: #f59a3b;
+	--color-highlight-soft: #fdeedd;
+
+	/* Palette — netral */
+	--color-bg: #eef1fa;
+	--color-surface: #ffffff;
+	--color-surface-muted: #f4f6fd;
+	--color-ink: #1a1d2e;
+	--color-ink-soft: #454b60;
+	--color-muted: #5d6478;
+	--color-border: #e5e8f0;
+	--color-border-strong: #c3cade;
+
+	/* Palette — status */
 	--color-danger: #a02a1f;
 	--color-success: #1c6b3c;
-	--color-focus: #14584a;
+	--color-focus: #2f5fd9;
+
+	/* Gradients — hanya hero dan banner promo (AGENTS.md §5) */
+	--gradient-hero: linear-gradient(135deg, #f7f9ff 0%, #e8eefb 55%, #dfe8fb 100%);
+	--gradient-promo: linear-gradient(135deg, #7fb0f5 0%, #4f86ea 55%, #a9c8f8 100%);
+	--gradient-promo-soft: linear-gradient(135deg, #e8f0fe 0%, #cfdffb 100%);
 
 	/* Type scale */
 	--text-xs: 0.75rem;
@@ -55,7 +71,7 @@
 	--space-24: 6rem;
 
 	/* Layout */
-	--container-max: 72rem;
+	--container-max: 69rem;
 	--container-pad: clamp(1rem, 4vw, 2.5rem);
 	--header-height: 4.5rem;
 
@@ -63,9 +79,12 @@
 	--radius-sm: 4px;
 	--radius-md: 8px;
 	--radius-lg: 12px;
+	--radius-xl: 14px;
 	--radius-pill: 999px;
 
 	/* Elevation */
 	--shadow-sm: 0 1px 2px rgb(21 24 26 / 0.06);
 	--shadow-md: 0 8px 24px rgb(21 24 26 / 0.08);
+	--shadow-card: 0 2px 12px rgb(40 60 120 / 0.06);
+	--shadow-card-hover: 0 8px 24px rgb(40 60 120 / 0.12);
 }

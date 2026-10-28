@@ -15,6 +15,8 @@ export interface ProductCardEntry {
 		featured_image?: ImageValue | null;
 		price?: number | null;
 		currency?: string | null;
+		/** Harga pembanding (sebelum diskon); hanya tampil bila lebih tinggi dari harga. */
+		compare_at_price?: number | null;
 		availability?: string | null;
 		terms?: Record<string, TaxonomyTerm[]>;
 	};

@@ -2,6 +2,39 @@
 
 Format ringkas per fase. Tanggal memakai ISO (YYYY-MM-DD).
 
+## 2026-10-28 — Phase 8: storefront homepage sesuai DESIGN.md
+
+### Added
+- `src/components/HeroCarousel.astro` + `src/scripts/hero-carousel.ts` — carousel 3 slide dengan scroll-snap, dot, panah, autoplay 5s, tombol Jeda/Mainkan, hormati `prefers-reduced-motion`.
+- `src/components/QuickCategoryCard.astro`, `SectionHead.astro`, `FilterTabs.astro`, `PromoBanner.astro`, `MediaPlaceholder.astro`.
+- `src/scripts/public-client.ts` — satu entry point untuk inisialisasi klien publik (header + carousel).
+- `docs/TODO.md` Phase 8 dan `docs/DECISIONS.md` ADR-033/ADR-034.
+
+### Changed
+- `src/pages/index.astro` disusun ulang: top bar/header, hero, kategori cepat, produk pilihan + tab filter + banner promo, baru masuk, banner kategori, rail katalog, artikel.
+- `src/styles/tokens.css` — palet provisional dari DESIGN.md, gradient hero/promo, radius dan shadow kartu.
+- `src/styles/global.css` — radius/shadow kartu, badge varian baru, `.icon-btn`, `.rail`, spacing section `clamp()`.
+- `src/components/ProductCard.astro` — badge, harga coret kondisional, placeholder gambar, "Harga belum tersedia".
+- `src/components/Badge.astro` — tone `highlight`/`soft`; `src/utils/product.ts` — tipe `compare_at_price`.
+- `src/components/SiteHeader.astro` + `src/layouts/Base.astro` — top bar, tagline, tombol keranjang nonaktif, script klien dipindah ke bundel eksternal.
+- `astro.config.mjs` — `vite.build.assetsInlineLimit: 0` (ADR-034).
+- `scripts/site-audit.mjs` — slug kategori ditemukan dari beranda, bukan hardcoded.
+
+### Fixed
+- Script Astro yang di-inline ke HTML diblokir CSP (`script-src` nonce) sehingga carousel dan menu header tidak berfungsi di build produksi.
+
+### Verified
+- `npm run typecheck` → 59 file, 0 error / 0 warning / 0 hint.
+- `npm test` → 33/33 lulus.
+- `npm run build` sukses; `npm run audit:site -- --base http://127.0.0.1:4322 --production` → PASS.
+- CDP: klik panah memindahkan slide (scrollLeft 0 → 1048), dot aktif ikut berubah, autoplay berhenti setelah interaksi, tanpa error CSP.
+- Screenshot 390/768/1280 tanpa overflow horizontal (`scrollWidth === innerWidth`).
+- Tidak ada string produk/harga contoh dari DESIGN.md di `src/`.
+
+### Notes
+- Banner promo masih placeholder (belum ada model data promo); kartu harga memakai "Harga belum tersedia".
+- `compare_at_price` belum ada di schema `products`, jadi harga coret belum bisa diisi dari admin.
+
 ## 2026-10-28 — Perencanaan Phase 8: storefront homepage sesuai DESIGN.md
 
 ### Added

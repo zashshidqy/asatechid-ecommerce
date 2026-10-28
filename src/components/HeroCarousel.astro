@@ -1,0 +1,239 @@
+---
+import MediaPlaceholder from "./MediaPlaceholder.astro";
+
+interface Slide {
+	eyebrow: string;
+	title: string;
+	highlight?: string;
+	lead: string;
+	href: string;
+	cta: string;
+}
+
+interface Props {
+	slides: Slide[];
+}
+
+const { slides } = Astro.props;
+---
+
+<section
+	class="hero-carousel"
+	data-hero
+	aria-roledescription="carousel"
+	aria-label="Sorotan beranda"
+>
+	<div class="hero-carousel__decor" aria-hidden="true"></div>
+	<div class="container">
+		<ul class="hero-carousel__track" data-hero-track>
+			{
+				slides.map((slide, index) => {
+					const Heading = index === 0 ? "h1" : "h2";
+					return (
+						<li
+							class="hero-carousel__slide"
+							role="group"
+							aria-roledescription="slide"
+							aria-label={`${index + 1} dari ${slides.length}`}
+						>
+							<div class="hero-carousel__copy">
+								<p class="eyebrow">{slide.eyebrow}</p>
+								<Heading class="hero-carousel__title">
+									{slide.title}{" "}
+									{slide.highlight && (
+										<span class="hero-carousel__highlight">{slide.highlight}</span>
+									)}
+								</Heading>
+								<p class="hero-carousel__lead">{slide.lead}</p>
+								<a class="btn btn--primary" href={slide.href}>
+									{slide.cta}
+									<span aria-hidden="true">›</span>
+								</a>
+							</div>
+							<div class="hero-carousel__visual">
+								<MediaPlaceholder ratio="4:3" label="Visual hero" hint="DEMO" />
+							</div>
+						</li>
+					);
+				})
+			}
+		</ul>
+
+		{
+			slides.length > 1 && (
+				<div class="hero-carousel__controls">
+					<div class="hero-carousel__dots" data-hero-dots>
+						{slides.map((_, index) => (
+							<button
+								type="button"
+								class="hero-carousel__dot"
+								data-hero-dot={index}
+								aria-label={`Tampilkan slide ${index + 1}`}
+								aria-current={index === 0 ? "true" : undefined}
+							/>
+						))}
+					</div>
+					<div class="cluster">
+						<button
+							type="button"
+							class="btn btn--secondary btn--sm"
+							data-hero-toggle
+							aria-pressed="false"
+						>
+							Jeda
+						</button>
+						<button
+							type="button"
+							class="icon-btn"
+							data-hero-prev
+							aria-label="Slide sebelumnya"
+						>
+							<span aria-hidden="true">‹</span>
+						</button>
+						<button
+							type="button"
+							class="icon-btn"
+							data-hero-next
+							aria-label="Slide berikutnya"
+						>
+							<span aria-hidden="true">›</span>
+						</button>
+					</div>
+				</div>
+			)
+		}
+	</div>
+</section>
+
+<style>
+	.hero-carousel {
+		position: relative;
+		overflow: hidden;
+		padding-block: var(--space-10) var(--space-8);
+		background: var(--gradient-hero);
+		border-bottom: 1px solid var(--color-border);
+	}
+
+	.hero-carousel__decor {
+		position: absolute;
+		inset: 0;
+		background-image:
+			radial-gradient(circle at 12% 22%, rgb(47 95 217 / 0.18) 0 2px, transparent 2px),
+			radial-gradient(circle at 84% 18%, rgb(245 154 59 / 0.28) 0 2px, transparent 2px),
+			radial-gradient(circle at 68% 72%, rgb(47 95 217 / 0.14) 0 3px, transparent 3px),
+			radial-gradient(circle at 28% 80%, rgb(91 155 240 / 0.2) 0 2px, transparent 2px);
+		background-size: 220px 200px, 260px 240px, 320px 280px, 240px 220px;
+		pointer-events: none;
+	}
+
+	.hero-carousel__track {
+		position: relative;
+		display: grid;
+		grid-auto-flow: column;
+		grid-auto-columns: 100%;
+		gap: var(--space-6);
+		margin: 0;
+		padding: 0 0 var(--space-2);
+		list-style: none;
+		overflow-x: auto;
+		scroll-snap-type: x mandatory;
+		scrollbar-width: none;
+	}
+
+	.hero-carousel__track::-webkit-scrollbar {
+		display: none;
+	}
+
+	.hero-carousel__slide {
+		display: grid;
+		gap: var(--space-6);
+		align-items: center;
+		scroll-snap-align: start;
+	}
+
+	.hero-carousel__copy {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: var(--space-3);
+	}
+
+	.hero-carousel__title {
+		margin: 0;
+		font-size: var(--text-3xl);
+		line-height: var(--leading-tight);
+		letter-spacing: -0.02em;
+	}
+
+	.hero-carousel__highlight {
+		color: var(--color-accent);
+	}
+
+	.hero-carousel__lead {
+		margin: 0;
+		max-width: 34rem;
+		color: var(--color-ink-soft);
+		font-size: var(--text-lg);
+	}
+
+	.hero-carousel__visual {
+		max-width: 22rem;
+		width: 100%;
+		justify-self: center;
+	}
+
+	.hero-carousel__controls {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: var(--space-4);
+		margin-top: var(--space-4);
+	}
+
+	.hero-carousel__dots {
+		display: flex;
+		align-items: center;
+		gap: var(--space-2);
+	}
+
+	.hero-carousel__dot {
+		width: 0.625rem;
+		height: 0.625rem;
+		padding: 0;
+		background: transparent;
+		border: 1.5px solid var(--color-ink);
+		border-radius: var(--radius-pill);
+		cursor: pointer;
+	}
+
+	.hero-carousel__dot::before {
+		/* Area sentuh lebih besar tanpa mengubah ukuran visual. */
+		content: "";
+		position: absolute;
+		inset: -0.75rem;
+	}
+
+	.hero-carousel__dot {
+		position: relative;
+	}
+
+	.hero-carousel__dot[aria-current="true"] {
+		background: var(--color-ink);
+	}
+
+	@media (min-width: 60rem) {
+		.hero-carousel {
+			padding-block: var(--space-16) var(--space-10);
+		}
+
+		.hero-carousel__slide {
+			grid-template-columns: minmax(0, 1fr) minmax(0, 0.85fr);
+			gap: var(--space-10);
+		}
+
+		.hero-carousel__visual {
+			justify-self: end;
+			max-width: 30rem;
+		}
+	}
+</style>

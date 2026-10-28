@@ -1,0 +1,42 @@
+---
+/**
+ * Header section dengan aksi opsional (link "Lihat semua") dan slot untuk
+ * filter tab atau kontrol carousel.
+ */
+interface Props {
+	title: string;
+	lead?: string;
+	href?: string;
+	linkLabel?: string;
+	id?: string;
+}
+
+const { title, lead, href, linkLabel = "Lihat semua", id } = Astro.props;
+---
+
+<div class="section-head">
+	<div>
+		<h2 class="section-head__title" id={id}>{title}</h2>
+		{lead && <p class="section-head__lead">{lead}</p>}
+	</div>
+	<div class="section-head__actions">
+		<slot name="actions" />
+		{
+			href && (
+				<a class="section-head__link" href={href}>
+					{linkLabel}
+					<span aria-hidden="true">›</span>
+				</a>
+			)
+		}
+	</div>
+</div>
+
+<style>
+	.section-head__actions {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: var(--space-3);
+	}
+</style>

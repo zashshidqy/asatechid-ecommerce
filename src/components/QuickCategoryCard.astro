@@ -1,0 +1,113 @@
+---
+/**
+ * Kartu kategori cepat. Ikon memakai SVG inline sederhana (stroke 1.5px)
+ * agar tidak menambah dependency ikon.
+ */
+interface Props {
+	title: string;
+	href: string;
+	icon?: "grid" | "sparkles" | "star" | "tag";
+	tone?: "accent" | "highlight";
+}
+
+const { title, href, icon = "grid", tone = "accent" } = Astro.props;
+---
+
+<a class:list={["quick-card", `quick-card--${tone}`]} href={href}>
+	<span class="quick-card__icon" aria-hidden="true">
+		{
+			icon === "sparkles" ? (
+				<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+					<path d="M12 3l1.9 4.6L18.5 9.5l-4.6 1.9L12 16l-1.9-4.6L5.5 9.5l4.6-1.9z" />
+					<path d="M18 15l.9 2.1L21 18l-2.1.9L18 21l-.9-2.1L15 18l2.1-.9z" />
+				</svg>
+			) : icon === "star" ? (
+				<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+					<path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8-5.2-2.7-5.2 2.7 1-5.8L3.5 9.7l5.9-.9z" />
+				</svg>
+			) : icon === "tag" ? (
+				<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+					<path d="M20 12.7L12.7 20a2 2 0 01-2.8 0L4 14.1V4h10.1l5.9 5.9a2 2 0 010 2.8z" />
+					<circle cx="8.5" cy="8.5" r="1.2" />
+				</svg>
+			) : (
+				<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+					<rect x="4" y="4" width="6.5" height="6.5" rx="1.2" />
+					<rect x="13.5" y="4" width="6.5" height="6.5" rx="1.2" />
+					<rect x="4" y="13.5" width="6.5" height="6.5" rx="1.2" />
+					<rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.2" />
+				</svg>
+			)
+		}
+	</span>
+	<span class="quick-card__body">
+		<span class="quick-card__title">{title}</span>
+		<span class="quick-card__link">
+			Lihat kategori <span aria-hidden="true">›</span>
+		</span>
+	</span>
+</a>
+
+<style>
+	.quick-card {
+		display: flex;
+		align-items: center;
+		gap: var(--space-3);
+		padding: var(--space-4);
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-lg);
+		box-shadow: var(--shadow-card);
+		color: var(--color-ink);
+		text-decoration: none;
+		transition:
+			transform 160ms ease,
+			box-shadow 160ms ease;
+	}
+
+	.quick-card:hover {
+		transform: translateY(-2px);
+		box-shadow: var(--shadow-card-hover);
+		color: var(--color-ink);
+	}
+
+	.quick-card__icon {
+		display: inline-flex;
+		flex: 0 0 auto;
+		align-items: center;
+		justify-content: center;
+		width: 2.5rem;
+		height: 2.5rem;
+		border-radius: var(--radius-pill);
+		color: var(--color-surface);
+	}
+
+	.quick-card--accent .quick-card__icon {
+		background: var(--color-accent);
+	}
+
+	.quick-card--highlight .quick-card__icon {
+		background: var(--color-highlight);
+		color: var(--color-ink);
+	}
+
+	.quick-card__body {
+		display: flex;
+		flex-direction: column;
+		gap: 0.15rem;
+	}
+
+	.quick-card__title {
+		font-size: var(--text-base);
+		font-weight: 650;
+		line-height: 1.25;
+	}
+
+	.quick-card__link {
+		color: var(--color-accent);
+		font-size: var(--text-xs);
+		font-weight: 700;
+		letter-spacing: 0.06em;
+		text-transform: uppercase;
+	}
+</style>

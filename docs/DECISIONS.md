@@ -482,3 +482,20 @@ Konten publik Bahasa Indonesia (`<html lang="id">`, format tanggal `id-ID`). Mul
 - Section beranda bisa tampak lebih kosong dari mockup sampai data produk dan promo tersedia; ini disengaja.
 - Menambah konten promo nyata memerlukan keputusan model data (site setting atau collection), yang dicatat sebagai open item Phase 8.
 
+## ADR-034 — Script publik dibundel sebagai modul eksternal, bukan inline
+
+**Status:** diterima (Phase 8, 2026-10-28)
+
+**Konteks:** CSP publik memakai `script-src 'self' 'nonce-…'` (ADR-028). Astro meng-inline chunk script yang lebih kecil dari `vite.build.assetsInlineLimit` (default 4096 byte) menjadi `<script type="module">…</script>` tanpa nonce, sehingga browser memblokirnya dan progressive enhancement (menu header, carousel) tidak berjalan. Menambahkan atribut `nonce` pada `<script>` membuat Astro memperlakukannya sebagai `is:inline` (kode mentah, tanpa bundling), sehingga `import` tidak terselesaikan.
+
+**Keputusan:**
+- `vite.build.assetsInlineLimit` disetel `0` agar script Astro selalu diemisi sebagai `/_astro/*.js` dan dimuat lewat `src` (diizinkan `script-src 'self'`).
+- Semua inisialisasi klien publik dikumpulkan di `src/scripts/public-client.ts` dan diimpor sekali dari `Base.astro`.
+- Tidak ada inline script aplikasi di halaman publik; nonce CSP tetap dipakai untuk kebutuhan lain yang benar-benar inline.
+
+**Konsekuensi:**
+- Aset kecil (gambar/font yang diimpor lewat CSS/JS) tidak lagi di-inline sebagai data URI; ada tambahan request, tetapi ukurannya kecil.
+- Menambah halaman dengan script interaktif cukup menambah initializer di `public-client.ts`; jangan menulis `<script nonce>` berisi `import`.
+- Perilaku ini bergantung pada heuristik inlining Astro; tinjau ulang saat upgrade mayor (cek `script-src` di console browser, bukan hanya status 200).
+- Ditemukan juga bahwa `scripts/site-audit.mjs` memakai slug kategori hardcoded; audit kini menemukan kategori pertama dari beranda agar tetap valid saat data taxonomy berubah.
+

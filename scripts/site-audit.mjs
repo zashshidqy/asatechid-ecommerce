@@ -297,6 +297,14 @@ async function auditAdminSurface() {
 	pass("admin surface: dev bypass disabled, API requires auth, admin redirects to login");
 }
 
+// Category archives follow taxonomy data (seed or admin edits), so the audited
+// slug is discovered from the homepage instead of being hardcoded to a seed
+// value that may no longer exist.
+const homePage = await fetchPage("/");
+const categoryPath = homePage?.body.match(
+	/href="(\/products\/category\/[a-z0-9-]+)"/,
+)?.[1];
+
 const coreRoutes = [
 	["/", 200],
 	["/products", 200],
@@ -306,7 +314,7 @@ const coreRoutes = [
 	["/posts/panduan-memilih-produk-demo", 200],
 	["/category/general", 200],
 	["/tag/starter", 200],
-	["/products/category/perangkat-demo", 200],
+	...(categoryPath ? [[categoryPath, 200]] : []),
 	["/404", 404, true],
 	["/tidak-ada-halaman", 404, true],
 ];
