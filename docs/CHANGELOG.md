@@ -2,6 +2,83 @@
 
 Format ringkas per fase. Tanggal memakai ISO (YYYY-MM-DD).
 
+## 2026-10-28 — Admin lokal: passkey asli + perbaikan 401 saat menyimpan konten
+
+### Changed
+- Admin lokal kini memakai akun **passkey asli** (wizard setup selesai, `emdash:setup_complete=true`, `credentials` berisi 1 passkey). `dev@emdash.local` tetap ada sebagai fallback dev-bypass.
+- User dev lama dihapus lewat `POST /_emdash/api/setup/dev-reset` setelah snapshot `VACUUM INTO data.db.bak-20261026`; koleksi `ec_products` (4), `ec_posts` (4), `ec_pages` (1) tidak berubah oleh reset.
+
+### Fixed
+- `POST /_emdash/api/content/{collection}` mengembalikan `401 NOT_AUTHENTICATED` meski sesi valid — GET, PUT, publish, dan endpoint admin lain tetap 200. Penyebabnya state proses dev server lama (dijalankan sebelum reset user + setup passkey). Tindakan: `npx astro dev stop` lalu jalankan ulang; create produk kembali `201`.
+- Tidak ada perubahan kode aplikasi. Instrumentasi debug sementara di `node_modules/emdash` sudah dikembalikan ke isi asli (diverifikasi 0 baris debug).
+
+### Verified
+- Create + permanent-delete produk lewat HTTP API (`201`/`200`); entri uji tidak tersisa (`ec_products` = 4 produk DEMO).
+- `/api/auth/me` → 200 dengan sesi baru; dev-bypass tetap 200 hanya di mode dev.
+- `npx astro dev logs` menunjukkan `POST /_emdash/api/content/products → 201` setelah restart.
+
+## 2026-10-28 — Phase 7: Launch hardening
+
+### Added
+- `src/middleware.ts` — CSP publik dengan nonce per request, `X-Frame-Options`, dan HSTS saat HTTPS; CSP admin EmDash tidak ditimpa.
+- `src/scripts/site-header.ts` — progressive enhancement header (label LiveSearch, Escape menu), dipanggil dengan nonce.
+- `src/env.d.ts` — tipe `App.Locals.cspNonce`.
+- `src/lib/design/contrast.ts` + `contrast.test.ts` — helper kontras WCAG dan 2 test token.
+- `scripts/site-audit.mjs` + `npm run audit:site` — audit status, metadata, canonical, robots, OG, JSON-LD, heading, alt, ID, link, label dasar, header, sitemap, robots, admin surface.
+- `scripts/launch-check.ts` + `npm run check:launch`/`check:launch:staging` — gerbang env, kontak, DEMO, file sensitif, dokumen.
+- `docs/08-SECURITY.md`, `docs/09-TESTING.md`, `docs/10-DEPLOYMENT.md`, `docs/12-OPEN-DECISIONS.md`.
+
+### Changed
+- `src/components/SiteHeader.astro` memakai modul eksternal + nonce, bukan inline script tanpa nonce.
+- `src/styles/tokens.css` — `--color-muted` `#676d72` → `#63696e` agar kontras ≥ 4.5:1 di `surface-muted`.
+- `package.json` — script audit/launch check dan override `zod: 4.6.7`; `package-lock.json` ikut berubah.
+- `.gitignore` — tambah `data.db.*` untuk backup database.
+- `README.md`, `docs/README.md`, `docs/TODO.md` diperbarui untuk Phase 7 dan status blocker.
+
+### Verified
+- `npm run typecheck` → 52 file, 0 error / 0 warning / 0 hint.
+- `npm test` → 33/33 lulus (21 SEO Review + 10 inquiry + 2 kontras).
+- `npm run build` → sukses (warning chunk admin >500 kB tetap ada).
+- `npm audit` → 0 vulnerability setelah override zod (sebelumnya 6 high).
+- `npx emdash doctor` → semua cek lulus.
+- `npm run audit:site -- --base http://127.0.0.1:4328 --production` → PASS; sitemap 5 URL; 13 link internal unik; 22 warning LiveSearch.
+- Produksi: CSP + nonce, `X-Frame-Options: SAMEORIGIN`, `nosniff`, `Referrer-Policy`, `Permissions-Policy`; HSTS muncul dengan `X-Forwarded-Proto: https`.
+- Produksi: admin redirect 302, API tanpa auth 401, POST tanpa CSRF header 403, dev-bypass 403.
+- Backup/restore: `VACUUM INTO` + `PRAGMA integrity_check=ok`; aplikasi dijalankan dari salinan DB dan halaman produk mengembalikan 200.
+- Responsive: screenshot Firefox headless 390/768/1280 pada beranda, katalog, produk, artikel, kategori/tag.
+
+### Notes
+- `npm run check:launch` sengaja **FAIL** saat ini: `EMDASH_SITE_URL` belum diisi, kontak resmi belum ada, dan 73 marker DEMO masih ada. Ini adalah gerbang produksi, bukan regresi.
+- `data.db.bak-20261026` di-untrack, tetapi masih ada di history Git/remote; purge history + rotasi kunci adalah blocker operasional.
+- CSP publik masih memakai `style-src 'unsafe-inline'` karena scoped style Astro; `script-src` sudah nonce-based.
+- LiveSearch EmDash belum menyediakan label server-side; label ditambahkan script klien.
+
+## 2026-10-28 — Phase 6: Inquiry MVP
+
+### Added
+- `src/lib/inquiry/contact.ts` — resolusi konfigurasi kontak dari env, normalisasi nomor WhatsApp/email, validasi, dan pembentuk tautan `wa.me`/`mailto:` dengan konteks produk.
+- `src/lib/inquiry/contact.test.ts` — 10 unit test untuk normalisasi, konfigurasi tidak valid, dan encoding tautan.
+- `src/components/InquiryCta.astro` — CTA produk yang hanya merender kanal valid; menampilkan tombol nonaktif + pesan jelas bila belum dikonfigurasi.
+- Schema env server `INQUIRY_WHATSAPP_NUMBER` dan `INQUIRY_EMAIL` di `astro.config.mjs`.
+
+### Changed
+- `src/pages/products/[slug].astro` meresolusi konfigurasi kontak, mencatat peringatan konfigurasi tidak valid, dan menempatkan CTA di ringkasan produk.
+- `src/components/Button.astro` mendukung `target`/`rel` (default `noopener noreferrer` untuk `_blank`).
+- `package.json` menjalankan seluruh test di `src/lib/*/*.test.ts`.
+- `.env.example` mendokumentasikan dua variabel kontak opsional.
+
+### Verified
+- `npm run typecheck` → 45 file, 0 error / 0 warning / 0 hint.
+- `npm test` → 31/31 lulus (21 SEO Review + 10 inquiry).
+- `npm run build` → sukses.
+- Produksi dengan WhatsApp + email: kedua CTA tampil, pesan memuat judul + URL produk, tautan WhatsApp memakai `target="_blank"` dan `rel="noopener noreferrer"`.
+- Tanpa env: tombol nonaktif + pesan “Kanal kontak belum tersedia”; tidak ada tautan rusak.
+- WhatsApp tidak valid + email valid: hanya email yang tampil; peringatan dicatat server tanpa membocorkan nilai ke halaman.
+
+### Notes
+- Tidak ada form, penyimpanan lead, atau pengiriman email server-side pada fase ini.
+- Nilai kontak sebenarnya belum tersedia; CTA produksi tetap nonaktif sampai env diisi (ADR-026, ADR-027).
+
 ## 2026-10-26 — Phase 5: SEO Review UI
 
 ### Added

@@ -7,12 +7,15 @@ import {
 	getSiteSettings,
 	getTermsForEntries,
 } from "emdash";
+import { INQUIRY_EMAIL, INQUIRY_WHATSAPP_NUMBER } from "astro:env/server";
 import { Image, PortableText } from "emdash/ui";
 import Base from "../../layouts/Base.astro";
 import Container from "../../components/Container.astro";
 import Breadcrumbs from "../../components/Breadcrumbs.astro";
 import Badge from "../../components/Badge.astro";
+import InquiryCta from "../../components/InquiryCta.astro";
 import ProductGrid from "../../components/ProductGrid.astro";
+import { resolveInquiryContact } from "../../lib/inquiry/contact";
 import {
 	availabilityLabel,
 	formatProductPrice,
@@ -63,6 +66,16 @@ const seo = getSeoMeta(product, {
 	titleSeparator: settings.seo?.titleSeparator ?? " — ",
 	path: Astro.url.pathname.replace(/\/$/, ""),
 });
+
+const inquiryContact = resolveInquiryContact({
+	INQUIRY_WHATSAPP_NUMBER,
+	INQUIRY_EMAIL,
+});
+if (inquiryContact.issues.length > 0) {
+	console.warn("Inquiry CTA configuration:", inquiryContact.issues.join(" "));
+}
+const productUrl =
+	seo.canonical ?? new URL(Astro.url.pathname, siteOrigin).href;
 
 const categories = getProductCategories(product.data.terms);
 const brand = product.references?.brand.entries[0] ?? null;
@@ -219,6 +232,12 @@ const relatedWithTerms = related.map((entry) => ({
 						}
 						{missingNote && <p class="product__note">{missingNote}</p>}
 					</div>
+
+					<InquiryCta
+						productTitle={product.data.title}
+						productUrl={productUrl}
+						contact={inquiryContact}
+					/>
 
 					{
 						product.data.sku && (

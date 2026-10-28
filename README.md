@@ -3,11 +3,11 @@
 Website kedua ASATECHID: storefront/katalog produk dan pusat konten edukasi.
 Dibangun dengan **Astro** + **TypeScript** + **EmDash CMS**.
 
-> **Status: Phase 5 — SEO Review UI.** Konten saat ini adalah DEMO/SEED.
-> Katalog produk, artikel, metadata SEO, sitemap, robots, redirect, serta panel
-> SEO Review (pratinjau SERP, checklist, skor panduan, dan publish gate) sudah
-> berjalan di atas EmDash. Data produk, harga, domain, nomor kontak, dan
-> konfigurasi pembayaran belum tersedia dan tidak boleh dikarang.
+> **Status: Phase 7 — Launch hardening.** Konten saat ini adalah DEMO/SEED.
+> Katalog produk, artikel, metadata SEO, sitemap, robots, redirect, panel SEO
+> Review, CTA WhatsApp/email, serta header keamanan (CSP publik + nonce, HSTS)
+> sudah berjalan di atas EmDash. Data produk, harga, domain, nomor kontak
+> resmi, dan konfigurasi pembayaran belum tersedia dan tidak boleh dikarang.
 
 ## Prasyarat
 
@@ -37,10 +37,20 @@ migrasi, dan menerapkan seed DEMO.
 |---|---|---|
 | `EMDASH_ENCRYPTION_KEY` | Ya (lokal & produksi) | Kunci enkripsi secret plugin. Jangan commit `.env`. |
 | `EMDASH_SITE_URL` | Produksi | Origin publik (tanpa path), mis. `https://www.example.com`. Dipakai untuk canonical, OG URL, sitemap, dan robots.txt. Bila kosong, dipakai origin request (cukup untuk lokal). |
+| `INQUIRY_WHATSAPP_NUMBER` | Opsional | Nomor WhatsApp format internasional (tanpa awalan `0`), mis. `+62 8xx xxxx xxxx`. Bila kosong/tidak valid, CTA WhatsApp tidak dirender. |
+| `INQUIRY_EMAIL` | Opsional | Alamat email kontak. Bila kosong/tidak valid, CTA email tidak dirender. |
 
 `.env` sudah di-gitignore. Backup kunci ini sebelum deploy — tanpa kunci,
 secret plugin terenkripsi tidak bisa didekripsi. Domain produksi belum
 ditentukan, jadi jangan mengisi nilai contoh di atas ke production.
+
+### CTA inquiry
+
+Halaman detail produk menampilkan CTA WhatsApp dan/atau email hanya untuk kanal
+yang dikonfigurasi. Pesan otomatis memuat judul dan URL produk. Bila kedua
+kanal kosong, CTA diganti tombol nonaktif dengan pesan yang jelas — tidak ada
+tautan rusak atau status sukses palsu. Tidak ada form atau penyimpanan lead
+pada fase ini; situs tidak menyimpan isi pesan.
 
 ## Perintah
 
@@ -50,8 +60,14 @@ npm run build      # build production
 npm run preview    # preview hasil build
 npm run start      # jalankan server produksi (dist/server/entry.mjs)
 npm run typecheck  # astro check (TypeScript)
-npm test           # unit test engine audit SEO Review
+npm test           # unit test SEO Review + inquiry + kontras
+npm run audit:site -- --base http://localhost:4321
+npm run check:launch           # gerbang data produksi (gagal bila DEMO/env belum siap)
+npm run check:launch:staging   # versi longgar untuk staging
 ```
+
+`audit:site` memerlukan server yang berjalan. Tambahkan `--production` saat
+mengaudit build produksi agar dev-bypass/API admin ikut diperiksa.
 
 ## Stack
 
@@ -77,20 +93,31 @@ Deployment target belum dikunci (Node vs Cloudflare Workers + D1 + R2).
 | `src/styles/global.css` | Reset + primitif shell (button, card, form, prose, dll.) |
 | `src/components/` | Header, footer, logo, card, badge, breadcrumb, empty state, field |
 | `src/layouts/Base.astro` | Layout publik: head, skip link, header/footer, `main` |
+| `src/middleware.ts` | CSP publik + nonce, HSTS, header keamanan |
+| `src/scripts/site-header.ts` | Progressive enhancement header (label LiveSearch, Escape menu) |
 | `src/pages/` | Halaman publik (server-rendered) |
 | `src/lib/seo-review/` | Engine audit murni + adapter metadata SEO Review |
+| `src/lib/inquiry/` | Normalisasi kontak + pembentuk tautan WhatsApp/email |
+| `src/lib/design/` | Helper kontras WCAG + test token |
 | `src/plugins/seo-review/` | Plugin native: panel editor + publish gate |
+| `scripts/site-audit.mjs` | Audit SEO/a11y/header/sitemap tanpa dependency |
+| `scripts/launch-check.ts` | Gerbang env, DEMO, file sensitif, dokumen |
 | `emdash-env.d.ts` | Tipe koleksi (di-regenerate saat `dev`) |
-| `docs/` | Dokumentasi proyek & roadmap |
+| `docs/` | PRD, keamanan, testing, deployment, roadmap, keputusan |
 
 ## Batasan saat ini
 
 - Token desain masih provisional; brand final belum ada.
 - Panel SEO Review hanya mengaudit revisi draf terakhir yang tersimpan; ketikan yang belum disimpan belum terlihat.
 - Skor SEO Review adalah panduan internal, bukan prediksi peringkat Google.
-- Belum ada CTA inquiry/WhatsApp terkonfigurasi (Phase 6).
-- Data DEMO di seed/database harus diganti sebelum publikasi.
-- `docs/02-ARCHITECTURE.md` dan dokumen `04`–`10`, `12`–`17` belum tersedia.
+- CTA WhatsApp/email nonaktif sampai `INQUIRY_WHATSAPP_NUMBER`/`INQUIRY_EMAIL` diisi dengan nilai resmi.
+- Belum ada form inquiry, penyimpanan lead, atau halaman kontak khusus (Phase 6 memilih CTA saja).
+- Data DEMO di seed/database harus diganti sebelum publikasi; `npm run check:launch` sengaja gagal sampai itu dilakukan.
+- `data.db.bak-20261026` sudah di-untrack, tetapi masih ada di history Git/remote. Purge history dan rotasi kunci sebelum repo dianggap aman/publik.
+- Dua input LiveSearch mendapat `aria-label` dari script klien karena komponen EmDash tidak menyediakan label server-side.
+- Bundle admin EmDash > 500 kB memicu warning Vite; halaman publik hanya memuat CSS + LiveSearch kecil.
+- Target deployment belum dikunci; konfigurasi saat ini Node + SQLite + storage lokal.
+- `docs/00-PROJECT-BRIEF.md`, `docs/02-ARCHITECTURE.md`, `docs/04`–`07`, dan `docs/13`–`17` belum dibuat.
 
 Lihat `docs/11-ROADMAP.md` untuk urutan fase dan acceptance criteria.
 
@@ -100,3 +127,7 @@ Lihat `docs/11-ROADMAP.md` untuk urutan fase dan acceptance criteria.
 - Astro: https://docs.astro.build/
 - Aturan kerja agent: `docs/AGENTS.md`
 - PRD: `docs/01-PRD.md`
+- Keamanan: `docs/08-SECURITY.md`
+- Testing: `docs/09-TESTING.md`
+- Deployment & backup: `docs/10-DEPLOYMENT.md`
+- Keputusan terbuka: `docs/12-OPEN-DECISIONS.md`

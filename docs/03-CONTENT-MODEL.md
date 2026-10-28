@@ -164,6 +164,16 @@ tangan dari EmDash.
 - Skor dan checklist adalah panduan editorial internal, bukan prediksi
   peringkat Google.
 
+## Inquiry CTA (Phase 6)
+
+- Halaman detail produk menampilkan CTA WhatsApp dan/atau email hanya untuk
+  kanal yang dikonfigurasi lewat `INQUIRY_WHATSAPP_NUMBER` dan `INQUIRY_EMAIL`.
+- Pesan memuat judul dan URL canonical produk; tidak ada form atau penyimpanan
+  isi pesan.
+- Bila tidak ada kanal valid, CTA diganti tombol nonaktif dengan pesan jelas.
+- Nomor WhatsApp wajib format internasional tanpa awalan `0`; nomor lokal
+  ditolak agar tidak menghasilkan tautan ke nomor yang salah.
+
 ## Data DEMO pada seed
 
 `seed/seed.json` berisi:

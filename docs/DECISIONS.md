@@ -335,3 +335,131 @@ Konten publik Bahasa Indonesia (`<html lang="id">`, format tanggal `id-ID`). Mul
 - Skor tidak membandingkan antar-situs dan tidak mengukur Core Web Vitals, kecepatan, atau crawlability.
 - Menambah pemeriksaan baru mengubah skor; bobot harus ditinjau agar tidak menumpuk hukuman untuk masalah sejenis.
 - Pemeriksaan tautan di panel memakai maksimal 200 entri terbit per koleksi; katalog yang jauh lebih besar dapat melewatkan path lama (tidak ada positif palsu, tetapi bisa ada negatif palsu).
+
+## ADR-026 — CTA kontak config-driven, tanpa form atau penyimpanan lead
+
+**Status:** diterima (Phase 6)
+
+**Konteks:** Phase 6 meminta CTA WhatsApp/kontak yang benar-benar dikonfigurasi, dengan opsi form hanya bila pemilik menginginkan penyimpanan lead. Pemilik memilih WhatsApp + email dan **tidak** memilih form. Nomor/email sebenarnya belum diberikan, sehingga CTA tidak boleh memakai nilai karangan atau menampilkan tautan rusak.
+
+**Keputusan:**
+- Nomor dan email dibaca dari env server `INQUIRY_WHATSAPP_NUMBER` dan `INQUIRY_EMAIL`, dideklarasikan lewat `env.schema` Astro dengan `context: "server"`, `access: "secret"`, dan `optional: true`.
+- Halaman produk meresolusi konfigurasi sekali, mencatat peringatan bila nilai tidak valid, dan meneruskan hasilnya ke `InquiryCta`.
+- Hanya kanal valid yang dirender. Bila tidak ada kanal valid, CTA diganti tombol `disabled` dan pesan “Kanal kontak belum tersedia”; tidak ada tautan eksternal atau status sukses palsu.
+- Pesan WhatsApp/email memuat judul produk dan URL canonical produk, sehingga admin mengetahui konteks permintaan.
+- Tidak ada form, endpoint inquiry, tabel lead, atau pengiriman email server-side. Situs tidak menyimpan isi pesan; catatan privasi ditampilkan di CTA.
+- WhatsApp membuka tab baru dengan `rel="noopener noreferrer"`; email memakai `mailto:`.
+
+**Konsekuensi:**
+- CTA produksi tetap nonaktif sampai env diisi. Ini disengaja dan harus dilaporkan sebagai blocker data, bukan diisi dengan nomor contoh.
+- Mengubah nilai kontak memerlukan restart proses; nilai tidak dirahasiakan tetapi tidak dikirim ke bundle client.
+- Karena tidak ada penyimpanan, belum ada spam control/rate limit. Bila form ditambahkan nanti, diperlukan validasi server, persetujuan privasi, dan akses admin terbatas (sesuai PRD F-07).
+- CTA hanya ada di halaman detail produk; halaman kontak khusus dan CTA site-wide ditunda.
+
+## ADR-027 — Validasi nomor WhatsApp dan pembentukan tautan inquiry
+
+**Status:** diterima (Phase 6)
+
+**Konteks:** `wa.me` membutuhkan nomor internasional tanpa `+`, spasi, atau tanda baca. Situs tidak mengetahui kode negara pengguna/pemilik, sehingga nomor lokal berawalan `0` tidak dapat dikonversi dengan aman. Tautan `mailto:` juga bisa rusak bila alamat mengandung karakter query.
+
+**Keputusan:**
+- Normalisasi WhatsApp menerima `+`, digit, spasi, titik, tanda hubung, dan tanda kurung; hanya digit yang disimpan. Nomor harus 8–15 digit dan tidak boleh berawalan `0`.
+- Nomor yang tidak valid dianggap tidak dikonfigurasi; kanal lain tetap dirender. Peringatan server tidak mencantumkan nilai mentah.
+- Email divalidasi dengan pola konservatif (karakter umum, tanpa spasi/`?`/`&`/`#`), maksimal 254 karakter.
+- Judul, URL, subjek, dan body di-encode dengan `encodeURIComponent` sebelum dimasukkan ke tautan.
+- Unit test mencakup nomor internasional valid, nomor lokal/terlalu pendek/terlalu panjang/berisi huruf, email valid/tidak valid, konfigurasi kosong, dan encoding pesan.
+
+**Konsekuensi:**
+- Pemilik wajib memberi nomor format internasional (mis. `+62 ...`); nomor lokal akan ditolak dengan peringatan.
+- Tidak ada inferensi kode negara atau konversi otomatis, sehingga tidak ada tebakan yang bisa menghasilkan tautan ke nomor salah.
+- Perubahan aturan validasi harus disertai pembaruan test dan dokumentasi env.
+
+## ADR-028 — CSP publik dengan nonce, CSP admin EmDash tidak ditimpa
+
+**Status:** diterima (Phase 7)
+
+**Konteks:** EmDash sudah memasang baseline header dan CSP ketat untuk `/_emdash/*`, tetapi halaman publik belum punya CSP. Astro punya fitur `security.csp`, tetapi fitur itu global dan dapat bentrok dengan CSP/inline bootstrap admin EmDash. Halaman publik memuat satu inline script header dan beberapa blok `<style>` scoped Astro.
+
+**Keputusan:**
+- `src/middleware.ts` menambahkan CSP hanya untuk path non-`/_emdash`.
+- Nonce acak per request dibuat dengan `node:crypto`, disimpan di `Astro.locals.cspNonce`, dan dipakai inline script header.
+- `script-src 'self' 'nonce-…'`; tidak ada `'unsafe-inline'` untuk script.
+- `style-src 'self' 'unsafe-inline'` karena Astro merender scoped style sebagai `<style>` inline.
+- `frame-ancestors 'self'`, `object-src 'none'`, `base-uri 'self'`, `form-action 'self'`, `connect-src 'self'`.
+- `X-Frame-Options: SAMEORIGIN` disetel eksplisit untuk publik; CSP admin EmDash dibiarkan.
+- HSTS hanya ditambahkan bila request HTTPS langsung atau `X-Forwarded-Proto: https`.
+- Header memakai pola set-if-absent agar kebijakan host/CDN yang lebih ketat tetap menang.
+- Saat `astro dev` saja, `script-src` menambah `'unsafe-eval'` dan `connect-src` menambah `ws:`/`wss:` untuk Vite HMR; build produksi tidak memuatnya.
+
+**Konsekuensi:**
+- Inline script baru di halaman publik wajib memakai nonce atau dipindah ke modul same-origin; jika tidak, akan diblokir.
+- `style-src 'unsafe-inline'` melemahkan perlindungan CSS injection, tetapi tidak mengeksekusi script.
+- Reverse proxy wajib meneruskan `X-Forwarded-Proto` agar HSTS aktif di balik TLS termination.
+- Astro CSP global tidak diaktifkan agar admin tetap berfungsi.
+
+## ADR-029 — Audit situs dan launch check sebagai gerbang rilis
+
+**Status:** diterima (Phase 7)
+
+**Konteks:** Pemeriksaan SEO, aksesibilitas, header, sitemap, dan data produksi sebelumnya manual dan mudah terlewat. Sebagian pemeriksaan memerlukan server berjalan; sebagian lain cukup membaca file/env.
+
+**Keputusan:**
+- `scripts/site-audit.mjs` (tanpa dependency) mengaudit route inti + URL sitemap: status, title/description/canonical/robots, OG, JSON-LD, heading, alt, ID duplikat, link safety, label dasar, header keamanan, robots, dan admin surface. Mode `--production` memeriksa dev-bypass/API admin.
+- `scripts/launch-check.ts` memeriksa `EMDASH_ENCRYPTION_KEY`, `EMDASH_SITE_URL`, kontak, marker DEMO di seed, file sensitif terlacak, dan keberadaan dokumen wajib. Mode `--staging` menurunkan DEMO/kontak menjadi warning.
+- Keduanya dijalankan manual/CI; `check:launch` sengaja gagal sampai data produksi tersedia.
+- `audit:site` memerlukan server; `check:launch` tidak.
+
+**Konsekuensi:**
+- Audit statis tidak menggantikan browser/E2E, screen reader, atau Core Web Vitals lapangan.
+- Menambah route/header/metadata baru harus disertai pembaruan audit.
+- `check:launch` akan gagal selama DEMO/domain/kontak belum final; ini disengaja, bukan regresi.
+
+## ADR-030 — Override zod 4.6.7 untuk menutup advisory memory exhaustion
+
+**Status:** diterima (Phase 7)
+
+**Konteks:** `npm audit` melaporkan 6 high dari `zod@4.5.4` (GHSA-mrhx-c7xc-m3w5, CWE-770). EmDash dan paket `@emdash-cms/*` mem-pin `zod` tepat 4.5.4, sehingga `npm audit fix` tidak menawarkan perbaikan tanpa perubahan breaking.
+
+**Keputusan:**
+- Tambahkan `"overrides": { "zod": "4.6.7" }` di `package.json`.
+- Verifikasi ulang: `npm ls zod` (semua 4.6.7), `npm audit` (0), typecheck, 33 test, build, dan `emdash doctor` semuanya lulus.
+
+**Konsekuensi:**
+- Override berada di luar jaminan versi EmDash; tinjau ulang setiap upgrade EmDash.
+- Bila EmDash membutuhkan perilaku spesifik 4.5.4, override harus dilepas dan risiko didokumentasikan.
+- Advisory ini adalah DoS memory, bukan eksekusi kode; tetap ditutup karena murah dan kompatibel.
+
+## ADR-031 — Backup database di-untrack; history lama masih menjadi blocker
+
+**Status:** diterima (Phase 7)
+
+**Konteks:** `data.db.bak-20261026` terlacak di Git dan sudah ada di remote `main`. File berisi user dev dan konten demo; pemeriksaan tidak menemukan token/kredensial aktif. Database dan upload tidak boleh berada di repository.
+
+**Keputusan:**
+- Jalankan `git rm --cached data.db.bak-20261026` (file lokal tetap ada).
+- Tambahkan `data.db.*` ke `.gitignore` di samping `data.db` dan `data.db-*`.
+- Dokumentasikan prosedur backup/restore di `docs/10-DEPLOYMENT.md`.
+- Catat bahwa purge history dan rotasi kunci adalah blocker operasional sebelum repo dianggap aman/publik.
+
+**Konsekuensi:**
+- Menghapus dari commit terbaru tidak menghapus data dari history/remote.
+- Jika repo pernah publik, `EMDASH_ENCRYPTION_KEY` dan sesi admin harus dianggap perlu rotasi.
+- Backup produksi harus disimpan terenkripsi di luar repository dan diuji restore.
+
+## ADR-032 — Admin lokal memakai passkey; dev-bypass hanya fallback
+
+**Status:** diterima (2026-10-28)
+
+**Konteks:** EmDash 1.x tidak memakai username/password; autentikasi admin berbasis **passkey (WebAuthn)**. Wizard setup menolak membuat admin bila `users` sudah berisi baris (`ADMIN_EXISTS`, HTTP 400), sehingga akun sisa `dev@emdash.local` dari dev-bypass memblokir setup permanen. Saat pengujian, `POST /_emdash/api/content/{collection}` juga mengembalikan `401 NOT_AUTHENTICATED` meski sesi valid (GET/PUT/publish 200) pada proses dev server yang dijalankan sebelum reset + setup.
+
+**Keputusan:**
+- Akun admin lokal adalah akun passkey asli yang didaftarkan lewat wizard `/_emdash/admin` di browser.
+- Untuk mereset jalur setup, gunakan `POST /_emdash/api/setup/dev-reset` (dev-only) setelah snapshot `VACUUM INTO`; jangan menghapus tabel EmDash dengan SQL langsung.
+- Setelah reset/setup (atau setelah mengubah konfigurasi/plugin), **restart dev server** sebelum menguji tulis. Gejala state basi: create konten 401 `NOT_AUTHENTICATED` sementara endpoint lain normal.
+- `dev-bypass` tetap dipakai untuk uji otomatis/headless dan bukan pengganti uji UI admin; endpoint ini 403 di production.
+
+**Konsekuensi:**
+- Passkey terikat ke origin (`localhost:4321`); mengganti host/port memerlukan pendaftaran passkey baru.
+- Reset user menghapus seluruh baris `users` (termasuk passkey), tetapi tidak menyentuh koleksi/konten/media.
+- Diagnosis 401 pada create tidak boleh disimpulkan sebagai bug otorisasi kode sebelum dev server di-restart dan sesi diuji ulang.
+

@@ -12,7 +12,10 @@
     "preview": "astro preview",
     "start": "node ./dist/server/entry.mjs",
     "typecheck": "astro check",
-    "test": "node --experimental-strip-types --test src/lib/seo-review/*.test.ts"
+    "test": "node --experimental-strip-types --test \"src/lib/**/*.test.ts\"",
+    "audit:site": "node scripts/site-audit.mjs",
+    "check:launch": "node --experimental-strip-types scripts/launch-check.ts",
+    "check:launch:staging": "node --experimental-strip-types scripts/launch-check.ts --staging"
   },
   "dependencies": {
     "@astrojs/node": "^11.1.5",
@@ -25,6 +28,9 @@
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.10"
+  },
+  "overrides": {
+    "zod": "4.6.7"
   },
   "packageManager": "npm@10.9.7"
 }

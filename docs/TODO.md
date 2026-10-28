@@ -1,13 +1,13 @@
 # TODO — ASATECHID Commerce
 
-Status per 2026-10-26.
+Status per 2026-10-28.
 
 ## Phase 0 — Discovery & scaffold  ✅ SELESAI
 
 - [x] Periksa repo (hanya `docs/`, tidak ada kode).
 - [x] Verifikasi versi Astro (7.4.2) dan EmDash (1.3.0 / CLI 1.3.1).
 - [x] Scaffold dari template resmi EmDash **Starter (Node.js)** — `create-emdash` bersifat interaktif, sehingga file template diambil dari `emdash-cms/templates/starter` dan dipasang manual.
-- [x] Admin UI dapat dibuka (`/_emdash/admin/` → setup → dev bypass `dev@emdash.local`).
+- [x] Admin UI dapat dibuka (`/_emdash/admin/` → setup → dev bypass `dev@emdash.local`). **2026-10-28:** wizard setup diselesaikan di browser dan admin memakai passkey asli; dev-bypass hanya fallback (lihat ADR-032).
 - [x] Konten dapat dibuat/disimpan (draft), dipublikasikan, dan dirender publik; draft tidak tampil (404).
 - [x] `npm run typecheck` lulus (0 error).
 - [x] `npm run build` lulus.
@@ -17,8 +17,9 @@ Status per 2026-10-26.
 
 ### Catatan/blocker Phase 0
 - Node.js sistem saat Phase 0 masih v22.22.2 (< minimum v22.23.4). **Sudah diperbaiki pada 2026-10-26**: Node v22.23.4 dipasang di level user dan `node_modules` dipasang ulang dengan `npm ci` (lihat ADR-014).
-- `npm audit` melaporkan 6 high severity dari transitive `zod` di `emdash`; saran fix menurunkan `emdash` ke 0.36.0 (breaking). **Tidak diterapkan** — pantau upstream.
-- Setup wizard passkey tidak dapat diselesaikan headless; verifikasi tulis memakai dev bypass CLI.
+- `npm audit` melaporkan 6 high severity dari transitive `zod` di `emdash`; saran fix menurunkan `emdash` ke 0.36.0 (breaking). **Tidak diterapkan saat Phase 0.** Phase 7 menambahkan override `zod@4.6.7` dan audit menjadi 0 vulnerability (lihat ADR-029).
+- Setup wizard passkey tidak dapat diselesaikan headless; verifikasi tulis memakai dev bypass CLI. **2026-10-28:** wizard diselesaikan di browser dengan passkey; jalur headless tetap memakai dev-bypass untuk uji otomatis.
+- **Operasional dev:** setelah `setup/dev-reset` atau menyelesaikan setup passkey, **restart dev server** (`npx astro dev stop` lalu jalankan ulang). Proses lama dapat menyimpan state yang membuat `POST /_emdash/api/content/{collection}` gagal `401 NOT_AUTHENTICATED` padahal GET/PUT tetap berhasil (lihat ADR-032).
 - Warning chunk > 500 kB dari bundle admin EmDash (bukan halaman publik).
 
 ## Phase 1 — Design system & public shell  ✅ SELESAI
@@ -167,8 +168,75 @@ Catatan Phase 1:
 - Locale CMS masih `en`; audit memakai teks Indonesia tetapi tidak mengubah locale konten.
 - `docs/02-ARCHITECTURE.md` dan dokumen `04`–`10`, `12`–`17` masih belum tersedia.
 
-## Phase 6 — Inquiry MVP  ⬜
-## Phase 7 — Launch hardening  ⬜
+## Phase 6 — Inquiry MVP  ✅ SELESAI — CTA aktif setelah env diisi
+
+- [x] CTA WhatsApp + email pada halaman detail produk, hanya dirender bila kanal dikonfigurasi.
+- [x] Nomor/URL tujuan dibaca dari environment server (`INQUIRY_WHATSAPP_NUMBER`, `INQUIRY_EMAIL`), bukan hard-code.
+- [x] Validasi nomor WhatsApp (format internasional, 8–15 digit, menolak awalan 0) dan email sebelum membentuk tautan.
+- [x] Pesan WhatsApp/email memuat judul produk dan URL canonical produk, sehingga admin tahu konteks permintaan.
+- [x] WhatsApp membuka tab baru dengan `rel="noopener noreferrer"`; email memakai `mailto:` dengan subjek dan body terisi.
+- [x] Bila tidak ada kanal valid, CTA diganti tombol nonaktif + pesan jelas; tidak ada tautan rusak atau status sukses palsu.
+- [x] Catatan privasi: situs tidak menyimpan isi pesan; tidak ada form, tabel lead, atau endpoint inquiry pada fase ini.
+- [x] Unit test untuk normalisasi nomor/email, penanganan konfigurasi tidak valid, dan pembentukan tautan (10 test baru; total 31).
+- [x] `npm run typecheck` 0 error/0 warning/0 hint (45 file), `npm test` 31/31 lulus, `npm run build` sukses.
+
+### Verifikasi acceptance Phase 6
+- Build produksi dijalankan dengan `INQUIRY_WHATSAPP_NUMBER=+1 555 010 0000` dan `INQUIRY_EMAIL=uji@example.com`: halaman produk menampilkan **Chat WhatsApp** dan **Kirim email**; `wa.me` memuat nomor ternormalisasi + pesan ter-encode, `mailto:` memuat subjek/body, dan tautan WhatsApp memakai `target="_blank"` + `rel="noopener noreferrer"`.
+- Tanpa env: halaman produk menampilkan “Kanal kontak belum tersedia” dan tombol **Hubungi penjual** dalam keadaan `disabled`; tidak ada tautan eksternal.
+- Dengan WhatsApp tidak valid (`0812-...`) tetapi email valid: hanya **Kirim email** yang tampil; server mencatat peringatan konfigurasi tanpa membocorkan nilai ke halaman.
+- Halaman produk tetap **200** pada ketiga skenario; tidak ada error server.
+
+### Catatan/limitasi Phase 6
+- **Nilai kontak sebenarnya belum diberikan.** CTA di produksi tetap nonaktif sampai `INQUIRY_WHATSAPP_NUMBER` dan/atau `INQUIRY_EMAIL` diisi. Jangan mengisi nomor/email contoh ke production.
+- Tidak ada inquiry form, penyimpanan lead, atau pengiriman email server-side. Karena itu belum ada spam control/rate limit; menambah form nanti memerlukan validasi server, persetujuan privasi, dan akses admin terbatas.
+- CTA hanya ada di halaman detail produk. Halaman kontak khusus dan CTA site-wide (header/footer) belum dibuat; dapat ditambahkan pada Phase 7 atau saat kontak resmi tersedia.
+- Nomor WhatsApp wajib format internasional tanpa awalan 0 karena situs tidak mengetahui kode negara. Nomor lokal akan ditolak dan dianggap tidak dikonfigurasi.
+- Nilai `INQUIRY_*` adalah konfigurasi server; mengubahnya memerlukan restart proses. Nilai ini tidak dirahasiakan (dipakai di tautan publik), tetapi tidak dikirim ke bundle client.
+- Tidak ada janji waktu respons atau ketersediaan stok dalam pesan; konten pesan hanya konteks produk.
+
+## Phase 7 — Launch hardening  🟡 KODE SELESAI — BLOCKER DATA/OPERASIONAL
+
+- [x] Security review: auth admin, dev-bypass, API/CSRF, cookie, header, XSS, secret, upload, redirect, dependency.
+- [x] `src/middleware.ts`: CSP publik + nonce per request, `X-Frame-Options`, HSTS saat HTTPS; CSP admin EmDash tidak ditimpa.
+- [x] Inline script header dipindah ke modul + nonce; `script-src 'self' 'nonce-…'` tanpa `'unsafe-inline'`.
+- [x] Verifikasi produksi: `/_emdash/admin` → 302 login; API tanpa auth → 401; POST tanpa `X-EmDash-Request` → 403 CSRF; dev-bypass → 403.
+- [x] SEO route audit: status, title, description, canonical, robots, OG, JSON-LD, heading, alt, duplicate ID, link safety, sitemap, robots, redirect.
+- [x] `scripts/site-audit.mjs` + `npm run audit:site`; hasil produksi PASS (5 URL sitemap, 13 link internal unik, 22 warning LiveSearch).
+- [x] Responsive check Firefox headless 390/768/1280 pada beranda, katalog, produk, artikel, kategori/tag.
+- [x] A11y: skip link, lang, satu h1, urutan heading, focus-visible, target 44px, reduced motion, alt, `rel="noopener"`.
+- [x] Kontras token diuji otomatis (2 test); `--color-muted` digelapkan ke `#63696e` agar lulus 4.5:1 di `surface-muted`.
+- [x] Performance review: halaman publik ~26 KB CSS + ~6 KB LiveSearch; aset `_astro` immutable; bundle admin >500 kB hanya admin.
+- [x] Backup/restore diuji: `VACUUM INTO`, `integrity_check=ok`, server dijalankan dari salinan DB, halaman produk 200.
+- [x] Dokumentasi baru: `docs/08-SECURITY.md`, `docs/09-TESTING.md`, `docs/10-DEPLOYMENT.md`, `docs/12-OPEN-DECISIONS.md`.
+- [x] `scripts/launch-check.ts` + `npm run check:launch` (dan `:staging`) untuk env, kontak, DEMO, file sensitif, dokumen.
+- [x] Override `zod@4.6.7`; `npm audit` → 0 vulnerability; build/test tetap lulus.
+- [x] `data.db.bak-20261026` di-untrack dari Git dan pola `data.db.*` ditambahkan ke `.gitignore`.
+- [x] Typecheck 52 file 0 error/0 warning/0 hint; `npm test` 33/33; build sukses; `npx emdash doctor` lulus.
+- [ ] Hapus/ganti seluruh data DEMO dan aset `og-default-demo.png` sebelum publikasi.
+- [ ] Isi domain final, `EMDASH_SITE_URL` HTTPS, dan kontak resmi; CTA saat ini nonaktif.
+- [ ] Purge `data.db.bak-20261026` dari history Git + remote, lalu rotasi `EMDASH_ENCRYPTION_KEY` dan sesi admin.
+- [ ] Verifikasi Search Console/Bing dengan kode nyata dan submit sitemap.
+- [ ] Pilih target deployment final (Node vs Cloudflare) dan selesaikan backup retensi.
+- [ ] `npm run check:launch` harus PASS (saat ini sengaja FAIL karena blocker di atas).
+
+### Verifikasi acceptance Phase 7
+- **Security:** header publik terverifikasi (`CSP` + nonce, `X-Frame-Options: SAMEORIGIN`, `nosniff`, `Referrer-Policy`, `Permissions-Policy`); HSTS muncul dengan `X-Forwarded-Proto: https`; CSP admin tetap memakai policy EmDash. `npm audit` 0 vulnerability setelah override zod.
+- **SEO:** `npm run audit:site -- --base http://127.0.0.1:4328 --production` → PASS; canonical/robots/OG/JSON-LD konsisten, 404 noindex tanpa canonical, sitemap 5 URL cocok canonical, robots memblokir `/_emdash/`.
+- **A11y/responsive:** screenshot 390/768/1280 tanpa overflow; satu h1 tanpa lompatan heading; tidak ada ID duplikat/gambar tanpa alt; kontras teks lulus AA. Warning tersisa: dua input LiveSearch baru mendapat label dari script klien.
+- **Performance:** halaman publik hanya memuat CSS gabungan + LiveSearch; tidak ada JS admin di halaman publik; aset hashed immutable.
+- **Backup/restore:** backup konsisten + integrity check + restore ke direktori terpisah berhasil (produk 200).
+- **Docs/scripts:** empat dokumen Phase 7 dibuat; `check:launch` dan `audit:site` dapat dijalankan ulang.
+
+### Blocker/limitasi Phase 7
+- **Data produksi belum ada:** domain, kontak resmi, produk/harga/stok, brand, deployment target, kode Search Console. `check:launch` sengaja gagal (3 blocker saat dijalankan: `EMDASH_SITE_URL`, kontak, dan 73 marker DEMO).
+- **Data DEMO masih ada** di `seed/seed.json` (73 marker) dan database; belum boleh publikasi.
+- **Backup DB pernah terlacak** dan sudah ada di remote `main`. File di-untrack, tetapi history belum dipurge; rotasi kunci wajib bila repo dianggap bocor.
+- CSP publik masih memakai `style-src 'unsafe-inline'` untuk scoped style Astro; `script-src` sudah nonce-based.
+- LiveSearch EmDash tidak punya label server-side; label ditambahkan script klien. Tanpa JS, pencarian tidak berfungsi.
+- Tidak ada uji screen reader formal, axe/Lighthouse CI, atau E2E browser.
+- Bundle admin >500 kB tetap warning Vite; bukan halaman publik.
+- Target Cloudflare belum divalidasi; konfigurasi saat ini Node + SQLite + storage lokal.
+
 ## Phase 8 — Full checkout (conditional)  ⬜
 
 ## Blocker data yang belum tersedia (jangan dikarang)

@@ -1,6 +1,6 @@
 import node from "@astrojs/node";
 import react from "@astrojs/react";
-import { defineConfig } from "astro/config";
+import { defineConfig, envField } from "astro/config";
 import emdash, { local } from "emdash/astro";
 import { sqlite } from "emdash/db";
 
@@ -9,6 +9,20 @@ export default defineConfig({
 	adapter: node({
 		mode: "standalone",
 	}),
+	env: {
+		schema: {
+			INQUIRY_WHATSAPP_NUMBER: envField.string({
+				context: "server",
+				access: "secret",
+				optional: true,
+			}),
+			INQUIRY_EMAIL: envField.string({
+				context: "server",
+				access: "secret",
+				optional: true,
+			}),
+		},
+	},
 	image: {
 		layout: "constrained",
 		responsiveStyles: true,

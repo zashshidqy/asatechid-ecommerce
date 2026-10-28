@@ -1,0 +1,102 @@
+---
+/**
+ * Product inquiry CTA.
+ *
+ * Renders only channels that are configured. When neither WhatsApp nor email
+ * is available, it shows a disabled control plus an explanation instead of a
+ * broken link or a fake success state.
+ */
+import Button from "./Button.astro";
+import {
+	buildInquiryLinks,
+	type InquiryContactResolution,
+} from "../lib/inquiry/contact";
+
+interface Props {
+	productTitle: string;
+	productUrl: string;
+	contact: InquiryContactResolution;
+}
+
+const { productTitle, productUrl, contact } = Astro.props;
+const links = buildInquiryLinks(contact, { productTitle, productUrl });
+const hasChannels = Boolean(links.whatsapp || links.email);
+---
+
+<section class="inquiry-cta" aria-labelledby="inquiry-cta-heading">
+	<h2 id="inquiry-cta-heading" class="inquiry-cta__heading">
+		Tanya tentang produk ini
+	</h2>
+
+	{
+		hasChannels ? (
+			<>
+				<p class="inquiry-cta__note">
+					Pilih kanal kontak yang tersedia. Pesan dibuka di aplikasi Anda;
+					situs ini tidak menyimpan isi pesan.
+				</p>
+				<div class="inquiry-cta__actions">
+					{links.whatsapp && (
+						<Button
+							href={links.whatsapp}
+							target="_blank"
+							rel="noopener noreferrer"
+						>
+							Chat WhatsApp
+						</Button>
+					)}
+					{links.email && (
+						<Button href={links.email} variant="secondary">
+							Kirim email
+						</Button>
+					)}
+				</div>
+			</>
+		) : (
+			<>
+				<p class="inquiry-cta__note inquiry-cta__note--unavailable">
+					Kanal kontak belum tersedia. CTA dinonaktifkan sampai kontak resmi
+					dikonfigurasi.
+				</p>
+				<div class="inquiry-cta__actions">
+					<Button disabled ariaLabel="Hubungi penjual (belum tersedia)">
+						Hubungi penjual
+					</Button>
+				</div>
+			</>
+		)
+	}
+</section>
+
+<style>
+	.inquiry-cta {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-3);
+		padding: var(--space-5);
+		background: var(--color-surface-muted);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-md);
+	}
+
+	.inquiry-cta__heading {
+		margin: 0;
+		font-size: var(--text-lg);
+	}
+
+	.inquiry-cta__note {
+		margin: 0;
+		color: var(--color-ink-soft);
+		font-size: var(--text-sm);
+	}
+
+	.inquiry-cta__note--unavailable {
+		color: var(--color-muted);
+	}
+
+	.inquiry-cta__actions {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-3);
+	}
+</style>

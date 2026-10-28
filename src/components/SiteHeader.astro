@@ -220,26 +220,9 @@ function isActive(url: string): boolean {
 	}
 </style>
 
-<script>
-	// EmDash's LiveSearch input has no label prop. Add an accessible name.
-	for (const input of document.querySelectorAll<HTMLInputElement>(
-		".emdash-live-search-input",
-	)) {
-		if (!input.getAttribute("aria-label")) {
-			input.setAttribute("aria-label", "Cari di situs");
-		}
-	}
+<script nonce={Astro.locals.cspNonce}>
+	import { initSiteHeader } from "../scripts/site-header";
 
-	// Close the mobile menu with Escape.
-	document.addEventListener("keydown", (event) => {
-		if (event.key !== "Escape") return;
-		const open = document.querySelector<HTMLDetailsElement>(
-			".nav-disclosure[open]",
-		);
-		if (open) {
-			open.open = false;
-			open.querySelector("summary")?.focus();
-		}
-	});
+	initSiteHeader();
 </script>
 

@@ -7,6 +7,8 @@ interface Props {
 	disabled?: boolean;
 	class?: string;
 	ariaLabel?: string;
+	target?: string;
+	rel?: string;
 }
 
 const {
@@ -17,6 +19,8 @@ const {
 	disabled = false,
 	class: className,
 	ariaLabel,
+	target,
+	rel,
 } = Astro.props;
 
 const classes = [
@@ -36,6 +40,8 @@ const classes = [
 			class={classes}
 			aria-label={ariaLabel}
 			aria-disabled={disabled ? "true" : undefined}
+			target={target}
+			rel={rel ?? (target === "_blank" ? "noopener noreferrer" : undefined)}
 		>
 			<slot />
 		</a>

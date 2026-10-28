@@ -4,5 +4,5 @@
 		"types": ["node"],
 		"strict": true
 	},
-	"include": ["src", ".astro/types.d.ts", "emdash-env.d.ts"]
+	"include": ["src", "scripts", ".astro/types.d.ts", "emdash-env.d.ts"]
 }

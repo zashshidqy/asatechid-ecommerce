@@ -10,29 +10,26 @@ Paket dokumentasi Markdown untuk membangun website kedua ASATECHID dengan Astro 
 4. Minta agent menjalankan discovery dan membuat scaffold dari template resmi EmDash yang sesuai dengan deployment target; jangan mulai dengan menulis ulang CMS sendiri.
 5. Jalankan proyek lokal, audit hasil, dan lanjutkan fase roadmap satu per satu.
 
-## Dokumen dalam paket
+## Dokumen yang tersedia
 
 | File | Tujuan |
 |---|---|
 | `AGENTS.md` | Aturan wajib untuk coding agent |
-| `docs/00-PROJECT-BRIEF.md` | Ringkasan tujuan, konteks, asumsi dan batasan |
 | `docs/01-PRD.md` | Requirement produk dan acceptance criteria |
-| `docs/02-ARCHITECTURE.md` | Arsitektur Astro, EmDash, SEO dan commerce |
-| `docs/03-CONTENT-MODEL.md` | Collection editorial/katalog dan relasi data |
-| `docs/04-SEO-STRATEGY.md` | Strategi technical SEO, konten, dan tautan antar-situs |
-| `docs/05-SEO-EDITOR.md` | Spesifikasi SEO editor seperti Yoast |
-| `docs/06-COMMERCE.md` | Alur katalog, inquiry, dan evolusi checkout |
-| `docs/07-UX-UI.md` | Design system dan aturan pengalaman pengguna |
-| `docs/08-SECURITY.md` | Persyaratan keamanan dan privasi |
-| `docs/09-TESTING.md` | Strategi QA dan pengujian |
-| `docs/10-DEPLOYMENT.md` | Environment, deployment, backup, observability |
+| `docs/03-CONTENT-MODEL.md` | Collection editorial/katalog, relasi data, SEO Review, inquiry |
+| `docs/08-SECURITY.md` | Kontrol keamanan, header, secret, risiko terbuka |
+| `docs/09-TESTING.md` | Perintah, cakupan, dan keterbatasan pengujian |
+| `docs/10-DEPLOYMENT.md` | Environment, deployment, backup/restore, Search Console |
 | `docs/11-ROADMAP.md` | Urutan fase implementasi |
-| `docs/12-OPEN-DECISIONS.md` | Data yang belum dipastikan beserta default yang aman |
-| `docs/13-TODO.md` | Checklist kerja dan acceptance per fase |
-| `docs/14-DECISIONS.md` | Catatan keputusan teknis/ADR |
-| `docs/15-CONTENT-PLAN.md` | Model editorial dan topic-cluster planning |
-| `docs/16-REFERENCES.md` | Link sumber resmi dan kebijakan SEO |
-| `docs/17-CHANGELOG.md` | Catatan perubahan proyek |
+| `docs/12-OPEN-DECISIONS.md` | Data/keputusan yang belum tersedia dan default aman |
+| `docs/TODO.md` | Checklist kerja dan acceptance per fase |
+| `docs/DECISIONS.md` | Catatan keputusan teknis/ADR |
+| `docs/CHANGELOG.md` | Catatan perubahan proyek |
+
+Dokumen `00-PROJECT-BRIEF.md`, `02-ARCHITECTURE.md`, `04`–`07`, dan `13`–`17`
+dari paket awal belum dibuat. Nama aktual untuk TODO/DECISIONS/CHANGELOG
+adalah `docs/TODO.md`, `docs/DECISIONS.md`, dan `docs/CHANGELOG.md` (bukan
+`13-TODO.md`, `14-DECISIONS.md`, `17-CHANGELOG.md`).
 
 ## Keputusan awal yang sengaja dibuat konservatif
 
