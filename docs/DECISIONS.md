@@ -499,3 +499,23 @@ Konten publik Bahasa Indonesia (`<html lang="id">`, format tanggal `id-ID`). Mul
 - Perilaku ini bergantung pada heuristik inlining Astro; tinjau ulang saat upgrade mayor (cek `script-src` di console browser, bukan hanya status 200).
 - Ditemukan juga bahwa `scripts/site-audit.mjs` memakai slug kategori hardcoded; audit kini menemukan kategori pertama dari beranda agar tetap valid saat data taxonomy berubah.
 
+## ADR-035 — Realignment storefront mempertahankan route Inggris dan menghapus hero lama
+
+**Status:** diterima (Phase 9, 2026-11-02)
+
+**Konteks:** `docs/DESIGN.md` berubah dari mockup gadget "Technova" menjadi blueprint katalog berbasis audit publik Vins Teknik. Route `/products` dan `/products/category/*` sudah berjalan, memiliki canonical, sitemap, redirect, dan verifikasi SEO. Hero carousel serta banner DEMO berasal dari dokumen lama dan tidak terverifikasi pada referensi baru.
+
+**Keputusan:**
+- Pertahankan route publik Inggris (`/products`, `/products/category/*`) sebagai canonical. Route contoh Indonesia dalam DESIGN.md diperlakukan sebagai blueprint informasi, bukan kontrak URL.
+- Hapus hero carousel dan seluruh banner promo DEMO dari homepage. Homepage disusun product-first: merek, kategori, produk terbaru, rekomendasi, semua produk, lalu artikel.
+- Phase 9 dikerjakan sebagai vertical slice P0: token semantik provisional, header/footer catalog-first, category/brand tiles, product card dense-catalog, homepage, dan katalog dasar.
+- Nama, logo, produk, kategori, kontak, pembayaran, kurir, harga, rating, jumlah terjual, stok, dan aset Vins Teknik tidak disalin.
+- Cart, wishlist, quantity, checkout, review, tracking, dan promo tidak dirender sebagai aksi aktif sampai data serta backend nyata tersedia.
+
+**Konsekuensi:**
+- Tidak ada migrasi URL atau redirect baru pada slice ini; risiko perubahan canonical minimum.
+- Warna baru tetap provisional sampai brand guideline ASATECHID tersedia.
+- Brand tile boleh tampil dari collection CMS yang sudah ada, tetapi belum menjadi tautan sampai halaman merek dan strategi URL disetujui.
+- Product card hanya memakai field yang tersedia di schema saat ini. Harga pembanding, rating, review count, jumlah terjual, dan stok numerik ditunda sampai model serta sumber datanya disetujui.
+- Komponen/script homepage lama (`HeroCarousel`, `PromoBanner`, `QuickCategoryCard`, `FilterTabs`, `hero-carousel.ts`) dihapus setelah pencarian referensi memastikan tidak dipakai lagi.
+

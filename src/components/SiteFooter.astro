@@ -17,23 +17,31 @@ const year = new Date().getFullYear();
 		<div class="site-footer__brand">
 			<Logo title={siteTitle} logo={siteLogo} />
 			{siteTagline && <p class="site-footer__tagline">{siteTagline}</p>}
+			<p class="site-footer__availability">
+				Informasi harga dan ketersediaan hanya tampil saat data sudah diverifikasi.
+			</p>
 		</div>
 
-		<nav class="site-footer__nav" aria-label="Navigasi footer">
-			<h2 class="site-footer__heading">Jelajahi</h2>
+		<nav class="site-footer__nav" aria-label="Navigasi katalog">
+			<h2 class="site-footer__heading">Katalog</h2>
 			<ul>
-				<li><a href="/">Beranda</a></li>
-				<li><a href="/products">Produk</a></li>
-				<li><a href="/posts">Artikel</a></li>
+				<li><a href="/products">Semua produk</a></li>
+				<li><a href="/posts">Artikel dan panduan</a></li>
+			</ul>
+		</nav>
+
+		<nav class="site-footer__nav" aria-label="Navigasi perusahaan">
+			<h2 class="site-footer__heading">Perusahaan</h2>
+			<ul>
 				<li><a href="/about">Tentang</a></li>
+				<li><a href="/">Beranda</a></li>
 			</ul>
 		</nav>
 
 		<div class="site-footer__note">
-			<h2 class="site-footer__heading">Status</h2>
+			<h2 class="site-footer__heading">Kontak & layanan</h2>
 			<p>
-				Scaffold tahap awal. Konten dan identitas visual masih placeholder dan
-				akan diganti sebelum peluncuran.
+				Kontak resmi, metode pembayaran, dan kurir akan ditampilkan setelah dikonfigurasi pengelola.
 			</p>
 		</div>
 	</div>
@@ -54,24 +62,27 @@ const year = new Date().getFullYear();
 
 	.site-footer__inner {
 		display: grid;
-		gap: var(--space-10);
+		gap: var(--space-8);
 		padding-bottom: var(--space-12);
 	}
 
-	.site-footer__tagline {
-		max-width: 22rem;
+	.site-footer__tagline,
+	.site-footer__availability {
+		max-width: 24rem;
 		margin-top: var(--space-4);
 		margin-bottom: 0;
 		color: var(--color-muted);
 	}
 
+	.site-footer__availability {
+		font-size: var(--text-xs);
+	}
+
 	.site-footer__heading {
 		margin: 0 0 var(--space-3);
-		font-size: var(--text-xs);
+		color: var(--color-ink);
+		font-size: var(--text-sm);
 		font-weight: 700;
-		letter-spacing: 0.1em;
-		text-transform: uppercase;
-		color: var(--color-muted);
 	}
 
 	.site-footer__nav ul {
@@ -89,7 +100,7 @@ const year = new Date().getFullYear();
 	}
 
 	.site-footer__nav a:hover {
-		color: var(--color-accent);
+		color: var(--color-accent-hover);
 		text-decoration: underline;
 	}
 
@@ -110,10 +121,15 @@ const year = new Date().getFullYear();
 		margin: 0;
 	}
 
-	@media (min-width: 48rem) {
+	@media (min-width: 40rem) {
 		.site-footer__inner {
-			grid-template-columns: 1.4fr 1fr 1.4fr;
-			gap: var(--space-12);
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+		}
+	}
+
+	@media (min-width: 64rem) {
+		.site-footer__inner {
+			grid-template-columns: 1.5fr 0.8fr 0.8fr 1.2fr;
 		}
 	}
 </style>

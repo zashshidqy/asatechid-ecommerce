@@ -663,50 +663,48 @@
 							],
 							"_key": "p1c"
 						},
-						[
-							{
-								"_type": "block",
-								"style": "normal",
-								"listItem": "bullet",
-								"level": 1,
-								"children": [
-									{
-										"_type": "span",
-										"text": "Catat fungsi utama yang benar-benar dibutuhkan.",
-										"_key": "p1ds0"
-									}
-								],
-								"_key": "p1d0"
-							},
-							{
-								"_type": "block",
-								"style": "normal",
-								"listItem": "bullet",
-								"level": 1,
-								"children": [
-									{
-										"_type": "span",
-										"text": "Tentukan batas anggaran sebelum melihat pilihan.",
-										"_key": "p1ds1"
-									}
-								],
-								"_key": "p1d1"
-							},
-							{
-								"_type": "block",
-								"style": "normal",
-								"listItem": "bullet",
-								"level": 1,
-								"children": [
-									{
-										"_type": "span",
-										"text": "Periksa apakah ada layanan purna jual yang jelas.",
-										"_key": "p1ds2"
-									}
-								],
-								"_key": "p1d2"
-							}
-						],
+						{
+							"_type": "block",
+							"style": "normal",
+							"listItem": "bullet",
+							"level": 1,
+							"children": [
+								{
+									"_type": "span",
+									"text": "Catat fungsi utama yang benar-benar dibutuhkan.",
+									"_key": "p1ds0"
+								}
+							],
+							"_key": "p1d0"
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"listItem": "bullet",
+							"level": 1,
+							"children": [
+								{
+									"_type": "span",
+									"text": "Tentukan batas anggaran sebelum melihat pilihan.",
+									"_key": "p1ds1"
+								}
+							],
+							"_key": "p1d1"
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"listItem": "bullet",
+							"level": 1,
+							"children": [
+								{
+									"_type": "span",
+									"text": "Periksa apakah ada layanan purna jual yang jelas.",
+									"_key": "p1ds2"
+								}
+							],
+							"_key": "p1d2"
+						},
 						{
 							"_type": "block",
 							"style": "h2",

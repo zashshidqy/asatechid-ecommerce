@@ -1,6 +1,6 @@
 # Keputusan Terbuka
 
-Status: Phase 7, 2026-10-28.
+Status: Phase 9, 2026-11-02.
 
 Daftar hal yang **belum diputuskan atau datanya belum tersedia**. Sampai ada
 keputusan resmi, proyek memakai default aman di kolom kanan. Jangan mengarang
@@ -15,8 +15,8 @@ nilai untuk mengisi kolom yang kosong.
 | 5 | Brand guideline (warna/font/logo) | Belum ada | Token provisional di `src/styles/tokens.css` | Identitas visual final |
 | 6 | Foto/aset produk | Belum ada | Placeholder “Gambar belum tersedia” | Halaman produk final |
 | 7 | Target deployment | Belum dikunci | Node standalone + SQLite + storage lokal | Infrastruktur, backup, biaya |
-| 8 | Provider pembayaran | Belum ada | Tidak ada checkout/pembayaran | Phase 8 |
-| 9 | Ongkir, pajak, retur | Belum ada | Tidak ada klaim kebijakan | Phase 8, halaman kebijakan |
+| 8 | Provider pembayaran | Belum ada | Tidak ada checkout/pembayaran | Phase 10 |
+| 9 | Ongkir, pajak, retur | Belum ada | Tidak ada klaim kebijakan | Phase 10, halaman kebijakan |
 | 10 | Halaman legal (privasi, syarat, retur) | Belum ada | Tidak ada form/lead; belum ada halaman legal final | Publikasi produksi |
 | 11 | Kode verifikasi Search Console/Bing | Belum ada | Tidak ada file/kode verifikasi palsu | Submit sitemap |
 | 12 | Analytics/tracking | Belum diputuskan | Tidak ada analytics/pihak ketiga | Pengukuran traffic |
@@ -30,6 +30,11 @@ nilai untuk mengisi kolom yang kosong.
 | 20 | Rotasi `EMDASH_ENCRYPTION_KEY` | Belum | Kunci lokal ada; rotasi belum | Jika history dianggap bocor |
 | 21 | Kebijakan privasi CTA | Belum final | CTA menyatakan situs tidak menyimpan pesan | Publikasi produksi |
 | 22 | Nama merek/legal entity | Belum ada | “ASATECHID Commerce” (placeholder) | Footer/legal/SEO |
+| 23 | Model promo | Belum ada | Section promo disembunyikan; tidak ada banner DEMO | Promo homepage/detail |
+| 24 | Rating, review, jumlah terjual, stok numerik | Belum ada | Field tidak ditampilkan | Kartu/detail produk lengkap |
+| 25 | Galeri, berat, minimum order | Belum ada | Satu gambar utama + spesifikasi yang tersedia | Detail produk/fulfillment |
+| 26 | Halaman merek publik | Belum diputuskan | Merek tampil sebagai tile non-tautan | Directory/filter merek |
+| 27 | Provider pelacakan resi/chat/aplikasi | Belum ada | Fitur tidak dirender | Fitur P1/P2 Phase 9 |
 
 ## Keputusan yang sudah diambil
 
@@ -38,6 +43,7 @@ Lihat `docs/DECISIONS.md` (ADR-001…ADR-029). Yang paling relevan untuk launch:
 - ADR-026/027: CTA kontak config-driven, tanpa form/lead.
 - ADR-028: CSP publik + nonce, HSTS, header keamanan.
 - ADR-029: audit situs & launch check sebagai gerbang rilis.
+- ADR-035: route `/products` dipertahankan; hero/banner DEMO lama dihapus; realignment dimulai sebagai vertical slice P0.
 
 ## Cara menutup keputusan
 

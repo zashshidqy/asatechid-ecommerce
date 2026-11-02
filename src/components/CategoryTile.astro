@@ -1,0 +1,87 @@
+---
+interface Props {
+	title: string;
+	href: string;
+	count?: number | null;
+}
+
+const { title, href, count } = Astro.props;
+---
+
+<a class="category-tile" href={href}>
+	<span class="category-tile__media" aria-hidden="true">
+		<svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+			<path d="M4 7.5h16M7.5 4v16M4 16.5h16M16.5 4v16" />
+		</svg>
+	</span>
+	<span class="category-tile__body">
+		<strong>{title}</strong>
+		{
+			typeof count === "number" && (
+				<span>{count} produk</span>
+			)
+		}
+	</span>
+	<span class="category-tile__arrow" aria-hidden="true">›</span>
+</a>
+
+<style>
+	.category-tile {
+		display: grid;
+		grid-template-columns: auto minmax(0, 1fr) auto;
+		align-items: center;
+		gap: var(--space-3);
+		height: 100%;
+		min-height: 5.5rem;
+		padding: var(--space-4);
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-md);
+		color: var(--color-ink);
+		text-decoration: none;
+		transition: border-color 160ms ease, box-shadow 160ms ease;
+	}
+
+	.category-tile:hover {
+		border-color: var(--color-accent-light);
+		box-shadow: var(--shadow-card);
+		color: var(--color-ink);
+	}
+
+	.category-tile__media {
+		display: grid;
+		place-items: center;
+		width: 3rem;
+		height: 3rem;
+		background: var(--color-accent-soft);
+		border-radius: var(--radius-md);
+		color: var(--color-accent-hover);
+	}
+
+	.category-tile__body {
+		display: flex;
+		min-width: 0;
+		flex-direction: column;
+		gap: 0.1rem;
+	}
+
+	.category-tile__body strong {
+		display: -webkit-box;
+		overflow: hidden;
+		font-size: var(--text-sm);
+		line-height: 1.35;
+		-webkit-box-orient: vertical;
+		-webkit-line-clamp: 2;
+	}
+
+	.category-tile__body span {
+		color: var(--color-muted);
+		font-size: var(--text-xs);
+	}
+
+	.category-tile__arrow {
+		color: var(--color-accent);
+		font-size: var(--text-xl);
+		font-weight: 700;
+	}
+</style>

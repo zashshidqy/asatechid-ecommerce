@@ -194,7 +194,27 @@ textarea {
 }
 
 .grid--cards {
-	grid-template-columns: repeat(auto-fill, minmax(min(100%, 17rem), 1fr));
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: var(--space-3);
+}
+
+@media (min-width: 40rem) {
+	.grid--cards {
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+		gap: var(--space-4);
+	}
+}
+
+@media (min-width: 64rem) {
+	.grid--cards {
+		grid-template-columns: repeat(4, minmax(0, 1fr));
+	}
+}
+
+@media (min-width: 76rem) {
+	.grid--cards {
+		grid-template-columns: repeat(5, minmax(0, 1fr));
+	}
 }
 
 .split {
@@ -372,19 +392,17 @@ textarea {
 	height: 100%;
 	background: var(--color-surface);
 	border: 1px solid var(--color-border);
-	border-radius: var(--radius-lg);
+	border-radius: var(--radius-md);
 	overflow: hidden;
 	box-shadow: var(--shadow-card);
 	transition:
 		border-color 160ms ease,
-		box-shadow 160ms ease,
-		transform 160ms ease;
+		box-shadow 160ms ease;
 }
 
 .card:hover {
 	border-color: var(--color-border-strong);
 	box-shadow: var(--shadow-card-hover);
-	transform: translateY(-2px);
 }
 
 .card__media {

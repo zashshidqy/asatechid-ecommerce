@@ -8,7 +8,7 @@ import Container from "../../components/Container.astro";
 import Breadcrumbs from "../../components/Breadcrumbs.astro";
 import EmptyState from "../../components/EmptyState.astro";
 import ProductGrid from "../../components/ProductGrid.astro";
-import TaxonomyNav from "../../components/TaxonomyNav.astro";
+import CategoryTile from "../../components/CategoryTile.astro";
 
 const cursor = Astro.url.searchParams.get("cursor") || undefined;
 
@@ -49,13 +49,27 @@ if (Astro.cache?.enabled) {
 			</p>
 		</header>
 
-		<TaxonomyNav
-			terms={termsResult.data}
-			hrefBase="/products/category"
-			label="Kategori produk"
-			showCounts
-		/>
+		{
+			termsResult.data.length > 0 && (
+				<section class="catalog-categories" aria-labelledby="catalog-categories-title">
+					<h2 id="catalog-categories-title">Kategori produk</h2>
+					<ul>
+						{termsResult.data.map((term) => (
+							<li>
+								<CategoryTile
+									title={term.label}
+									count={term.count}
+									href={`/products/category/${term.slug}`}
+								/>
+							</li>
+						))}
+					</ul>
+				</section>
+			)
+		}
 
+		<section aria-labelledby="catalog-results-title">
+			<h2 class="catalog-results-title" id="catalog-results-title">Semua produk</h2>
 		{
 			products.length === 0 ? (
 				<EmptyState
@@ -66,6 +80,7 @@ if (Astro.cache?.enabled) {
 				<ProductGrid products={products} />
 			)
 		}
+		</section>
 
 		<nav class="pagination" aria-label="Navigasi halaman produk">
 			{cursor && (
@@ -86,10 +101,52 @@ if (Astro.cache?.enabled) {
 </Base>
 
 <style>
+	.catalog-categories {
+		margin-bottom: var(--space-10);
+	}
+
+	.catalog-categories h2,
+	.catalog-results-title {
+		font-size: var(--text-xl);
+	}
+
+	.catalog-categories ul {
+		display: grid;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: var(--space-3);
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+
+	.catalog-categories li {
+		display: flex;
+	}
+
+	.catalog-categories li > :global(*) {
+		flex: 1;
+	}
+
+	.catalog-results-title {
+		margin-bottom: var(--space-6);
+	}
+
 	.pagination {
 		display: flex;
 		flex-wrap: wrap;
 		gap: var(--space-3);
 		margin-top: var(--space-10);
+	}
+
+	@media (min-width: 40rem) {
+		.catalog-categories ul {
+			grid-template-columns: repeat(3, minmax(0, 1fr));
+		}
+	}
+
+	@media (min-width: 64rem) {
+		.catalog-categories ul {
+			grid-template-columns: repeat(4, minmax(0, 1fr));
+		}
 	}
 </style>

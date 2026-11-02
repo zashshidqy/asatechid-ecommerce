@@ -39,6 +39,25 @@ export interface PostHeading {
 
 export type TocBlock = PortableTextBlock & { _tocId?: string };
 
+/**
+ * Flattens legacy nested block arrays before passing content to PortableText.
+ * Older seed data contained one nested list, which otherwise becomes a node
+ * without `_type` and triggers a runtime warning.
+ */
+export function normalizePortableTextBlocks(
+	blocks?: PortableTextBlock[] | null,
+): PortableTextBlock[] {
+	if (!blocks) return [];
+	return blocks.flat(Infinity).filter((block): block is PortableTextBlock => {
+		return Boolean(
+			block &&
+				typeof block === "object" &&
+				"_type" in block &&
+				typeof block._type === "string",
+		);
+	});
+}
+
 export function getPostCategories(
 	terms?: Record<string, TaxonomyTerm[]> | null,
 ): TaxonomyTerm[] {
@@ -133,7 +152,7 @@ export function annotateHeadings(blocks?: PortableTextBlock[] | null): {
 	const headings: PostHeading[] = [];
 	const usedIds = new Set<string>();
 
-	const annotated = (blocks ?? []).map((block) => {
+	const annotated = normalizePortableTextBlocks(blocks).map((block) => {
 		if (block._type !== "block") return block;
 		const style = (block as { style?: string }).style;
 		if (style !== "h2" && style !== "h3") return block;

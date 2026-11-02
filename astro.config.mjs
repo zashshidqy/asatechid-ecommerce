@@ -1,6 +1,6 @@
 import node from "@astrojs/node";
 import react from "@astrojs/react";
-import { defineConfig, envField } from "astro/config";
+import { defineConfig, envField, memoryCache } from "astro/config";
 import emdash, { local } from "emdash/astro";
 import { sqlite } from "emdash/db";
 
@@ -9,6 +9,11 @@ export default defineConfig({
 	adapter: node({
 		mode: "standalone",
 	}),
+	// Cache SSR per proses. Cocok untuk deployment Node tunggal saat ini;
+	// deployment multi-instance harus mengganti provider dengan cache bersama.
+	cache: {
+		provider: memoryCache(),
+	},
 	env: {
 		schema: {
 			INQUIRY_WHATSAPP_NUMBER: envField.string({

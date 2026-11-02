@@ -1,6 +1,6 @@
 # TODO — ASATECHID Commerce
 
-Status per 2026-10-28.
+Status per 2026-11-02.
 
 ## Phase 0 — Discovery & scaffold  ✅ SELESAI
 
@@ -237,14 +237,14 @@ Catatan Phase 1:
 - Bundle admin >500 kB tetap warning Vite; bukan halaman publik.
 - Target Cloudflare belum divalidasi; konfigurasi saat ini Node + SQLite + storage lokal.
 
-## Phase 8 — Storefront homepage sesuai `docs/DESIGN.md`  ✅ KODE SELESAI (2026-10-28)
+## Phase 8 — Storefront homepage sesuai `docs/DESIGN.md`  🟡 BASELINE LAMA SELESAI — PERLU REALIGNMENT (2026-11-02)
 
-`docs/DESIGN.md` dipakai sebagai **acuan visual** (palet, tipografi, spacing, urutan section), **bukan** sumber brand maupun data. Lihat ADR-033 dan ADR-034.
+`docs/DESIGN.md` telah berubah total pada 2026-11-02: referensi sekarang **Vins Teknik** dengan fokus katalog alat teknik, bukan mockup gadget "Technova". Dokumen tetap dipakai sebagai acuan pola dan inventaris komponen, **bukan** sumber brand, aset, data, atau bukti pixel-perfect. Implementasi Phase 8 selesai terhadap versi lama, tetapi perlu diaudit ulang terhadap blueprint baru. Lihat ADR-033 dan ADR-034.
 
 ### 8.0 Keputusan yang mengikat
 
-- [x] Brand storefront: **ASATECHID**. Nama "Technova" pada `docs/DESIGN.md` **tidak dipakai** di UI, metadata, `package.json`, atau nama komponen.
-- [x] Nama produk, harga, SKU, merek, dan angka promo dari DESIGN.md **tidak boleh masuk kode** (Samsung, AppIDe, Taka Altra, MacBook Air, Neuled, YOS, Largo, Bobos, `$1,150`, `$950`, "Save up to 35%", dll.).
+- [x] Brand storefront: **ASATECHID**. Nama "Technova" dari versi lama dan "Vins Teknik" dari versi baru `docs/DESIGN.md` **tidak dipakai** sebagai brand UI, metadata, `package.json`, atau nama komponen.
+- [x] Nama produk, harga, SKU, merek, kategori, kontak, payment/courier, dan angka promo dari semua versi DESIGN.md **tidak boleh masuk kode sebagai data ASATECHID**. Daftar pada dokumen referensi hanya bukti struktur sumber, bukan data seed.
 - [x] Semua kartu memakai placeholder jujur: gambar `MediaPlaceholder` bertanda DEMO (rasio 4:3), harga `—` / "Harga belum tersedia", harga coret hanya bila nilainya valid.
 - [x] Seed `seed/seed.json` **tidak ditambah** entri demo baru pada fase ini.
 - [x] 4 quick category diturunkan dari taxonomy `product_category` (maks. 4 teratas); section disembunyikan bila kosong. Tidak ada label kurasi karangan.
@@ -254,7 +254,7 @@ Catatan Phase 1:
 
 ### 8.1 Token desain
 
-- [x] `src/styles/tokens.css`: palet provisional dari DESIGN.md — `accent #2f5fd9`, `accent-hover #1f4bb8`, `accent-light #5b9bf0`, `highlight #f59a3b`, `bg #eef1fa`, `surface-muted #f4f6fd`, ink 3 level, border `#e5e8f0`, `--gradient-hero`, `--gradient-promo`, `--gradient-promo-soft`.
+- [x] `src/styles/tokens.css`: palet provisional dari **versi lama** DESIGN.md — `accent #2f5fd9`, `accent-hover #1f4bb8`, `accent-light #5b9bf0`, `highlight #f59a3b`, `bg #eef1fa`, `surface-muted #f4f6fd`, ink 3 level, border `#e5e8f0`, `--gradient-hero`, `--gradient-promo`, `--gradient-promo-soft`. Token ini perlu diganti/audit pada Phase 9 karena baseline baru memakai token semantik berbeda.
 - [x] Token baru: `--radius-xl` (14px), `--shadow-card`, `--shadow-card-hover`, spacing section `clamp()`.
 - [x] `src/lib/design/contrast.test.ts`: 18 pasangan teks/latar diuji ≥ 4.5:1 (termasuk `ink` di `highlight` dan `accent` di `surface`).
 - [x] Tidak ada nilai warna duplikat di komponen baru; semua memakai token.
@@ -303,21 +303,105 @@ Catatan Phase 1:
 ### Catatan/limitasi Phase 8
 
 - DESIGN.md belum menjadi brand guideline resmi; token tetap provisional dan dapat diganti.
-- DESIGN.md melanggar sebagian aturan desain `docs/AGENTS.md` §5 (gradient dekoratif, sparkle). Implementasi membatasi gradient hanya pada hero/promo banner dan tidak memakai animasi berat.
+- Implementasi Phase 8 mengikuti versi DESIGN.md lama (gadget/Technova), termasuk palet biru, hero carousel, gradient, quick cards, dan slot promo. Blueprint baru memakai pola dense catalog Vins Teknik; kesesuaian visual lama tidak lagi dianggap acceptance final.
+- Blueprint baru tidak memverifikasi hero, sticky behavior, sorting, login/register, checkout, atau breakpoint asli. Jangan mempertahankan atau menambah fitur tersebut dengan klaim berasal dari referensi.
 - **Konten promo masih placeholder.** Belum ada model data promo; banner menampilkan label DEMO dan CTA nonaktif sampai sumber konten dipilih.
 - **Jumlah produk/kategori masih data DEMO** (kategori `dvr`/`nvr`, 3 produk). Hitungan "0 produk" pada banner kategori berasal dari data taxonomy saat ini, bukan bug tampilan.
 - Field `compare_at_price` belum ada di schema `products`; harga coret belum bisa diisi.
-- Cart, checkout, dan pembayaran tetap di luar lingkup (Phase 9 dan seterusnya).
+- Rating, jumlah terjual, stok numerik, minimum order, berat, promo, review, dan galeri belum tersedia dalam model data. Jangan tampilkan nilai karangan.
+- Cart, checkout, dan pembayaran tetap di luar lingkup (Phase 10 dan seterusnya).
 - Jika data produk belum ada, section menampilkan empty state, bukan kartu palsu.
 - Astro meng-inline chunk script < 4 KB sehingga bertabrakan dengan CSP nonce; `vite.build.assetsInlineLimit` disetel 0 agar script diemisi sebagai modul eksternal (ADR-034).
 
-## Phase 9 — Full checkout (conditional)  ⬜
+## Phase 9 — Realignment storefront ke blueprint Vins Teknik  ⬜
+
+Tujuan: selaraskan UI publik dengan `docs/DESIGN.md` versi 2026-11-02 tanpa menyalin brand/aset Vins Teknik dan tanpa mengaktifkan commerce palsu. Kerjakan P0 dahulu; P1/P2 hanya setelah data dan keputusan tersedia.
+
+### 9.0 Audit dan keputusan sebelum kode
+
+- [x] Audit awal komponen/route terhadap inventaris C01–C59: shell/search/footer, kategori, product grid/card, pagination, detail/specs, CTA inquiry, about, dan state dasar tersedia; filter katalog lengkap, brand directory, promo, galeri, share/review, tracking, cart/checkout, app, dan address belum ada atau tidak relevan untuk MVP.
+- [x] Petakan route blueprint Indonesia ke route aktual tanpa mengubah canonical: `/products`, `/products/category/*`, dan LiveSearch dipertahankan.
+- [x] Strategi URL: pertahankan route Inggris; tidak membuat alias yang menduplikasi halaman.
+- [x] Hero carousel dan dua banner DEMO lama dihapus dari homepage.
+- [x] Taxonomy kategori dipertahankan untuk P0; collection baru ditunda sampai kategori membutuhkan body/gambar/SEO mandiri.
+- [x] Collection merek dipakai untuk tile non-tautan; halaman/filter merek tetap open item karena relasi kartu dan route publik belum tersedia.
+- [x] Keputusan realignment dicatat di ADR-035.
+
+### 9.1 P0 — Design system dan shell katalog
+
+- [x] Ganti token lama berbasis mockup Technova dengan token semantik blueprint baru: primary/hover, page/surface/subtle, text primary/secondary/muted, border, success/warning/danger/focus. Semua tetap provisional.
+- [x] Sesuaikan container ke `1280px`, gutter 16px mobile/24px desktop, radius 6/10/16px, grid gap 12–20px, dan tipografi katalog; pasangan kontras lulus unit test.
+- [x] Font tetap system stack; tidak ada request font jaringan.
+- [x] Header catalog-first: brand, search dominan, tautan katalog, nav desktop, menu mobile. Cart/wishlist/account lama tidak dirender.
+- [x] Footer memakai struktur katalog/perusahaan/kontak; payment, courier, app badge, sosial, alamat, dan kontak tidak dirender sebelum data resmi tersedia.
+- [x] Skip link, focus ring, target sentuh ≥44px, reduced motion, dan CSP dipertahankan.
+
+### 9.2 P0 — Komponen katalog reusable
+
+- [x] Tambah `BrandTile` memakai data CMS/logo; homepage menyembunyikan section bila collection kosong. Tile belum menjadi tautan karena halaman merek belum diputuskan.
+- [x] Tambah `CategoryTile` reusable dengan tinggi konsisten, count nyata, dan ikon generik dekoratif.
+- [x] `SectionHead` reusable tetap dipakai untuk heading + aksi.
+- [x] Selaraskan `ProductCard`: gambar 1:1 `object-contain`, nama 2 baris, harga tabular, fallback gambar, dan availability state. Harga pembanding, rating, jumlah terjual, dan stok numerik tidak dirender karena belum ada di schema.
+- [x] `ProductGrid`, empty state, breadcrumb, dan pagination cursor dasar tetap dipakai; grid menjadi 2/3/4/5 kolom responsif.
+- [ ] Tambah loading/skeleton dan image-error state tanpa layout shift.
+- [x] Kontrak TypeScript diadaptasikan ke entry EmDash aktual; field opsional baru tidak ditampilkan tanpa data.
+
+### 9.3 P0 — Homepage dan discovery
+
+- [x] Homepage data-driven disusun: intro katalog → merek → kategori pilihan → produk terbaru → rekomendasi → semua produk → artikel. Promo disembunyikan karena model/data belum ada.
+- [x] Flash Sale tidak dibuat karena timestamp dan stok nyata belum tersedia.
+- [ ] Lengkapi layout listing dengan filter desktop, drawer mobile, active chips, reset, dan page-size. Pagination cursor + empty state sudah ada.
+- [ ] Filter kategori/merek memperbarui URL dan reset halaman; kombinasi filter yang tidak layak tidak membentuk banyak URL indexable.
+- [x] Search global tetap memakai LiveSearch EmDash dengan loading/no-results; route hasil pencarian penuh masih open item.
+- [ ] Pastikan filter mendatang mengembalikan fokus ke heading hasil; pagination sekarang memakai tautan keyboard-native.
+
+### 9.4 P0 — Halaman kategori, merek, pencarian, produk
+
+- [ ] Buat directory kategori dan listing kategori sesuai strategi URL/canonical terpilih.
+- [ ] Buat directory/landing merek hanya setelah collection `brands` routable dan data merek resmi tersedia.
+- [ ] Buat halaman hasil pencarian katalog crawl-safe; query tidak otomatis menjadi landing page indexable.
+- [x] Detail produk dasar tetap responsif: gambar `object-contain`, ringkasan, metadata/specs, deskripsi, availability, CTA inquiry, dan produk terkait. Galeri multi-gambar belum tersedia.
+- [ ] Galeri memakai data media nyata, counter, thumbnail, keyboard, dan swipe progresif; jika hanya satu gambar, jangan tampilkan kontrol palsu.
+- [ ] Quantity/cart/buy-now tidak dibuat sebelum cart/checkout nyata. CTA inquiry Phase 6 tetap jalur transaksi MVP.
+- [ ] Product/Offer/AggregateRating JSON-LD hanya ditambahkan ketika data valid lengkap tersedia.
+
+### 9.5 P1 — Fitur setelah model/data tersedia
+
+- [ ] Model promo CMS + halaman promo: jenis, syarat minimum, periode/zona waktu, kode opsional, hadiah, eligible products, state expired.
+- [ ] Share produk memakai native share dengan fallback salin tautan; jangan render tombol tanpa aksi.
+- [ ] Wishlist hanya setelah ada penyimpanan user/session.
+- [ ] Expandable description, review summary/list/empty state hanya setelah kebutuhan dan sumber data disetujui.
+- [ ] Halaman Tentang/Kontak/Pengiriman/Pengembalian/Privasi/Ketentuan memakai konten bisnis yang diberikan.
+- [ ] Pelacakan resi hanya setelah provider/API nyata tersedia; jangan mengaku status pengiriman dari mock.
+- [ ] Logo pembayaran dan kurir hanya untuk layanan yang benar-benar didukung.
+
+### 9.6 P2 — Opsional/kondisional
+
+- [ ] App download popover + QR/store badge hanya jika aplikasi resmi tersedia.
+- [ ] Chat provider integration hanya setelah channel resmi dipilih.
+- [ ] Address dialog hanya bersama akun/checkout dan penyimpanan aman.
+- [ ] Sorting, autosuggest, sticky purchase card, dan flash-sale urgency diperlakukan sebagai fitur baru, bukan hasil audit terverifikasi.
+
+### 9.7 Verifikasi dan dokumentasi
+
+- [ ] Uji viewport 375/390, 768, 1024, 1280, dan 1440; tidak ada overflow horizontal.
+- [ ] Uji keyboard untuk header, search, filter/drawer, gallery, pagination, dialog; lakukan uji screen reader/axe bila tooling tersedia.
+- [x] `npm run typecheck` lulus (58 file, 0 error/warning/hint), `npm test` 35/35 lulus, dan `npm run build` sukses.
+- [x] `npm run audit:site -- --base http://localhost:4323 --production` PASS (7 URL sitemap, 20 link internal, 16 warning label LiveSearch yang sudah dikenal). Route dinamis kini ditemukan dari sitemap, bukan slug seed atau markup homepage.
+- [ ] `npm run check:launch:staging` sudah dijalankan dan sengaja gagal pada `EMDASH_ENCRYPTION_KEY` + `EMDASH_SITE_URL`; 4 warning data/operasional tetap ada.
+- [ ] Uji performa gambar (`width`/`height`, `srcset`, lazy loading, LCP) dan pastikan interaksi tidak menambah bundle besar tanpa alasan.
+- [ ] Audit metadata/canonical/sitemap/robots/JSON-LD setelah perubahan route.
+- [ ] Perbarui `docs/TODO.md`, `docs/CHANGELOG.md`, `docs/DECISIONS.md`, dan `docs/12-OPEN-DECISIONS.md` untuk keputusan nyata.
+
+## Phase 10 — Full checkout (conditional)  ⬜
 
 ## Blocker data yang belum tersedia (jangan dikarang)
 
 - Nama produk, SKU, harga, stok, kategori final, merek.
 - Domain produksi, nomor WhatsApp, email/alamat kontak.
 - Brand guideline (warna/font/logo resmi). Nilai pada `docs/DESIGN.md` masih provisional.
-- Konten promo (judul, gambar, angka diskon) untuk banner beranda.
+- Konten promo (judul, gambar, angka diskon, syarat minimum, periode, produk eligible) untuk banner/halaman promo.
+- Aset merek berizin, rating/review, jumlah terjual, stok numerik, berat, minimum order, dan galeri produk.
 - Provider pembayaran, ongkir, pajak, kebijakan retur.
+- Provider pelacakan resi, chat, aplikasi resmi, serta layanan pembayaran/kurir yang didukung.
 - Target deployment final (Node vs Cloudflare).

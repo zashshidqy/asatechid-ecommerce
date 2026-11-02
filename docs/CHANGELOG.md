@@ -2,6 +2,56 @@
 
 Format ringkas per fase. Tanggal memakai ISO (YYYY-MM-DD).
 
+## 2026-11-02 — Phase 9 P0: realignment storefront katalog
+
+### Added
+- `src/components/BrandTile.astro` dan `CategoryTile.astro` — tile data-driven untuk merek dan kategori.
+- `docs/DECISIONS.md` ADR-035 — route Inggris dipertahankan, hero/banner lama dihapus, realignment dikerjakan sebagai vertical slice P0.
+
+### Changed
+- `src/styles/tokens.css` — token semantik katalog provisional, container 1280px, gutter 16/24px, radius 6/10/16px, status colors, dan palet kontras AA.
+- `src/components/SiteHeader.astro` — shell catalog-first dengan search dominan, tautan semua produk, nav desktop, dan menu mobile; cart palsu dihapus.
+- `src/components/SiteFooter.astro` — struktur katalog/perusahaan/kontak; layanan yang belum dikonfigurasi tidak diklaim tersedia.
+- `src/components/ProductCard.astro` — media 1:1 `object-contain`, judul dua baris, harga tabular, diskon turunan, dan state opsional rating/sold/out-of-stock tanpa data karangan.
+- `src/pages/index.astro` — hero carousel dan banner DEMO dihapus; homepage menjadi merek, kategori, produk terbaru, rekomendasi, semua produk, dan artikel.
+- `src/pages/products/index.astro` — category tiles dan heading hasil katalog.
+- `src/pages/products/[slug].astro` — gambar utama memakai `object-fit: contain`.
+- `src/scripts/public-client.ts` — initializer carousel dilepas.
+- Komponen/script homepage lama yang tak lagi dipakai dihapus: `HeroCarousel.astro`, `PromoBanner.astro`, `QuickCategoryCard.astro`, `FilterTabs.astro`, dan `hero-carousel.ts`.
+- `scripts/site-audit.mjs` — route produk inti ditemukan dari homepage, bukan slug seed lama yang sudah tidak ada di database.
+- `docs/TODO.md` dan `docs/12-OPEN-DECISIONS.md` diperbarui sesuai status serta keputusan Phase 9.
+
+### Verified
+- `npm run typecheck` → 58 file, 0 error / 0 warning / 0 hint.
+- `npm test` → 35/35 lulus, termasuk pasangan token dan normalisasi PortableText.
+- `npm run build` sukses; warning chunk admin >500 kB tetap ada.
+- `npm run audit:site -- --base http://localhost:4323 --production` → PASS; 7 URL sitemap, 20 link internal, 16 warning label LiveSearch yang sudah dikenal.
+- `npm run check:launch:staging` dijalankan dan gagal sesuai blocker: `EMDASH_ENCRYPTION_KEY` serta `EMDASH_SITE_URL`; warning kontak, DEMO, OG image, dan history DB tetap ada.
+
+### Fixed
+- Homepage kini mengembalikan error server saat query CMS gagal, bukan menyamarkan kegagalan sebagai collection kosong.
+- Produk terbaru, rekomendasi, dan semua produk tidak lagi menduplikasi entry; rekomendasi disembunyikan bila tidak ada produk pilihan tersisa.
+- Field kartu yang belum ada di schema (`compare_at_price`, stok numerik, rating, review count, sold count) dihapus dari kontrak/UI.
+- Nested array PortableText lama diratakan di seed dan dinormalisasi defensif saat render artikel.
+- Audit route dinamis kini memakai sitemap, bukan slug DEMO atau kecocokan markup homepage.
+- Cache SSR memakai provider memory Astro agar `cache.set()` tidak menghasilkan warning pada deployment Node tunggal.
+
+### Notes
+- Filter desktop/drawer mobile, brand directory, route search penuh, skeleton/image-error, dan galeri multi-gambar belum dikerjakan pada slice ini.
+- `git diff --check` terhalang trailing whitespace yang sudah ada pada perubahan pengguna di `docs/DESIGN.md`; file implementasi tidak dilaporkan punya whitespace error.
+
+## 2026-11-02 — Realignment TODO untuk DESIGN.md baru
+
+### Changed
+- `docs/TODO.md` — status Phase 8 dikoreksi menjadi baseline versi lama yang perlu realignment setelah `docs/DESIGN.md` berubah dari mockup gadget "Technova" menjadi blueprint katalog alat teknik berbasis audit Vins Teknik.
+- `docs/TODO.md` — Phase 9 baru memetakan audit C01–C59, keputusan route/canonical, token dan shell katalog, komponen reusable, discovery/filter/search, detail produk, fitur P1/P2, serta verifikasi.
+- Full checkout digeser menjadi Phase 10 karena realignment storefront harus selesai lebih dahulu.
+- Blocker diperluas untuk strategi URL, nasib hero/banner lama, data katalog tambahan, aset berizin, promo, tracking, chat, aplikasi, payment, dan courier.
+
+### Notes
+- Tidak ada kode aplikasi yang berubah. Test/typecheck/build tidak dijalankan karena perubahan hanya dokumentasi.
+- `docs/DECISIONS.md` belum diubah; ADR-033 perlu diperbarui setelah keputusan realignment disetujui, bukan ditebak saat perencanaan.
+
 ## 2026-10-28 — Dokumentasi visual beranda
 
 ### Added

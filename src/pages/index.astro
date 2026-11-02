@@ -3,126 +3,133 @@ import { getEmDashCollection, getSiteSettings, getTaxonomyTermsWithCacheHint } f
 import Base from "../layouts/Base.astro";
 import Container from "../components/Container.astro";
 import EmptyState from "../components/EmptyState.astro";
-import HeroCarousel from "../components/HeroCarousel.astro";
-import QuickCategoryCard from "../components/QuickCategoryCard.astro";
-import SectionHead from "../components/SectionHead.astro";
-import FilterTabs from "../components/FilterTabs.astro";
-import PromoBanner from "../components/PromoBanner.astro";
-import ProductCard from "../components/ProductCard.astro";
+import BrandTile from "../components/BrandTile.astro";
+import CategoryTile from "../components/CategoryTile.astro";
+import ProductGrid from "../components/ProductGrid.astro";
 import PostGrid from "../components/PostGrid.astro";
+import SectionHead from "../components/SectionHead.astro";
 import { resolveStarterSiteIdentity } from "../utils/site-identity";
-import { PRODUCT_CATEGORY_TAXONOMY, getProductCategories } from "../utils/product";
+import { PRODUCT_CATEGORY_TAXONOMY } from "../utils/product";
 
-const { entries: posts, cacheHint } = await getEmDashCollection("posts", {
+const postsResult = await getEmDashCollection("posts", {
 	orderBy: { published_at: "desc" },
 	limit: 3,
 });
-if (Astro.cache?.enabled) Astro.cache.set(cacheHint);
+if (postsResult.error) {
+	console.error("Failed to load homepage posts:", postsResult.error);
+	return new Response("Tidak dapat memuat beranda.", { status: 500 });
+}
+if (Astro.cache.enabled) Astro.cache.set(postsResult.cacheHint);
+const posts = postsResult.entries;
 
-// Boolean fields cannot be used in `where` on this EmDash version, so the
-// featured flag is applied in memory over a small ordered page. Revisit if the
-// catalogue grows beyond one page of candidates.
 const productsResult = await getEmDashCollection("products", {
 	orderBy: { published_at: "desc" },
-	limit: 24,
+	limit: 20,
 });
-if (Astro.cache?.enabled) Astro.cache.set(productsResult.cacheHint);
+if (productsResult.error) {
+	console.error("Failed to load homepage products:", productsResult.error);
+	return new Response("Tidak dapat memuat beranda.", { status: 500 });
+}
+if (Astro.cache.enabled) Astro.cache.set(productsResult.cacheHint);
 const allProducts = productsResult.entries;
-const featuredProducts = allProducts.filter(
-	(product) => product.data.featured === true,
+const featuredProducts = allProducts
+	.filter((product) => product.data.featured === true)
+	.slice(0, 5);
+const newestProducts = allProducts.slice(0, 5);
+const newestIds = new Set(newestProducts.map((product) => product.id));
+const recommendedProducts = featuredProducts.filter(
+	(product) => !newestIds.has(product.id),
 );
+const shownProductIds = new Set([
+	...newestProducts.map((product) => product.id),
+	...recommendedProducts.map((product) => product.id),
+]);
+const remainingProducts = allProducts
+	.filter((product) => !shownProductIds.has(product.id))
+	.slice(0, 10);
 
 const productCategories = await getTaxonomyTermsWithCacheHint(
 	PRODUCT_CATEGORY_TAXONOMY,
 	{ includeCounts: true },
 );
-if (Astro.cache?.enabled) Astro.cache.set(productCategories.cacheHint);
+if (productCategories.error) {
+	console.error("Failed to load homepage product categories:", productCategories.error);
+	return new Response("Tidak dapat memuat beranda.", { status: 500 });
+}
+if (Astro.cache.enabled) Astro.cache.set(productCategories.cacheHint);
 const categories = productCategories.data;
 
-const quickCategories =
-	categories.slice(0, 4).map((category, index) => ({ ...category, index }));
-
-const activeCategory =
-	Astro.url.searchParams.get("kategori")?.trim().toLowerCase() ?? "";
-const knownCategory = categories.find(
-	(category) => category.slug === activeCategory,
-);
-const filteredFeatured = knownCategory
-	? featuredProducts.filter((product) =>
-			getProductCategories(product.data.terms).some(
-				(category) => category.slug === knownCategory.slug,
-			),
-		)
-	: featuredProducts;
-
-const tabs = [
-	{ label: "Semua", href: "/", active: !knownCategory },
-	...categories.slice(0, 4).map((category) => ({
-		label: category.label,
-		href: `/?kategori=${encodeURIComponent(category.slug)}`,
-		active: knownCategory?.slug === category.slug,
-	})),
-];
-
-const newestProducts = allProducts.slice(0, 8);
-// Hindari mengulang produk yang sama di grid "Baru masuk"; rail menampilkan
-// sisa katalog dan disembunyikan bila belum ada.
-const railProducts = allProducts.slice(3, 11);
+const brandsResult = await getEmDashCollection("brands", {
+	orderBy: { published_at: "desc" },
+	limit: 10,
+});
+if (brandsResult.error) {
+	console.error("Failed to load homepage brands:", brandsResult.error);
+	return new Response("Tidak dapat memuat beranda.", { status: 500 });
+}
+if (Astro.cache.enabled) Astro.cache.set(brandsResult.cacheHint);
+const brands = brandsResult.entries;
 
 const { siteTitle, siteTagline } = resolveStarterSiteIdentity(
 	await getSiteSettings(),
 );
-
-const heroSlides = [
-	{
-		eyebrow: "Katalog & edukasi",
-		title: "Produk gadget dengan",
-		highlight: "informasi yang jelas",
-		lead: "Harga dan ketersediaan hanya ditampilkan bila datanya sudah tersedia. Tidak ada angka yang dikarang.",
-		href: "/products",
-		cta: "Lihat katalog",
-	},
-	{
-		eyebrow: "Panduan",
-		title: "Pahami dulu,",
-		highlight: "baru memutuskan",
-		lead: "Artikel dan panduan membantu Anda membandingkan pilihan sebelum membeli.",
-		href: "/posts",
-		cta: "Baca artikel",
-	},
-	{
-		eyebrow: "Kontak",
-		title: "Tanya langsung",
-		highlight: "sebelum membeli",
-		lead: "Kanal WhatsApp dan email aktif setelah nomor resmi dikonfigurasi oleh pengelola.",
-		href: "/products",
-		cta: "Lihat produk",
-	},
-];
 ---
 
 <Base title={siteTitle} description={siteTagline} mainClass="site-main--flush">
-	<HeroCarousel slides={heroSlides} />
+	<section class="catalog-intro" aria-labelledby="catalog-intro-title">
+		<Container>
+			<div class="catalog-intro__inner">
+				<div>
+					<p class="eyebrow">Katalog ASATECHID</p>
+					<h1 id="catalog-intro-title">Temukan produk berdasarkan kebutuhan</h1>
+					<p>
+						Jelajahi kategori, produk terbaru, dan panduan. Harga serta ketersediaan hanya ditampilkan ketika datanya sudah diverifikasi.
+					</p>
+				</div>
+				<a class="btn btn--primary" href="/products">Lihat semua produk</a>
+			</div>
+		</Container>
+	</section>
 
 	{
-		quickCategories.length > 0 && (
-			<section class="section section--tight" aria-labelledby="quick-categories">
+		brands.length > 0 && (
+			<section class="section" aria-labelledby="brands-title">
 				<Container>
-					<h2 class="sr-only" id="quick-categories">Kategori cepat</h2>
-					<ul class="quick-grid">
-						{quickCategories.map((category) => (
+					<SectionHead
+						title="Merek"
+						lead="Merek yang tersedia dalam katalog saat ini."
+						id="brands-title"
+					/>
+					<ul class="brand-grid">
+						{brands.map((brand) => (
 							<li>
-								<QuickCategoryCard
+								<BrandTile name={brand.data.name} logo={brand.data.logo} />
+							</li>
+						))}
+					</ul>
+				</Container>
+			</section>
+		)
+	}
+
+	{
+		categories.length > 0 && (
+			<section class="section" aria-labelledby="categories-title">
+				<Container>
+					<SectionHead
+						title="Kategori pilihan"
+						lead="Masuk ke katalog melalui kelompok produk."
+						id="categories-title"
+						href="/products"
+						linkLabel="Semua kategori"
+					/>
+					<ul class="category-grid">
+						{categories.slice(0, 8).map((category) => (
+							<li>
+								<CategoryTile
 									title={category.label}
+									count={category.count}
 									href={`/products/category/${category.slug}`}
-									tone={category.index % 2 === 0 ? "accent" : "highlight"}
-									icon={
-										["grid", "sparkles", "star", "tag"][category.index % 4] as
-											| "grid"
-											| "sparkles"
-											| "star"
-											| "tag"
-									}
 								/>
 							</li>
 						))}
@@ -132,160 +139,89 @@ const heroSlides = [
 		)
 	}
 
-	<section class="section">
+	<section class="section" aria-labelledby="new-products-title">
 		<Container>
 			<SectionHead
-				title="Produk pilihan"
-				lead="Pilihan dari katalog yang sedang kami tampilkan."
+				title="Produk terbaru"
+				lead="Produk terbaru yang dipublikasikan ke katalog."
+				id="new-products-title"
 				href="/products"
-				linkLabel="Lihat semua produk"
-			>
-				<FilterTabs slot="actions" items={tabs} label="Filter produk pilihan" />
-			</SectionHead>
-
-			<div class="featured-layout">
-				{
-					filteredFeatured.length > 0 ? (
-						<ul class="product-grid">
-							{filteredFeatured.map((product) => (
-								<li>
-									<ProductCard
-										product={product}
-										headingLevel="h3"
-										badge={{ label: "Pilihan", tone: "accent" }}
-									/>
-								</li>
-							))}
-						</ul>
-					) : (
-						<EmptyState
-							title="Belum ada produk pilihan"
-							description="Produk akan muncul di sini setelah ditandai sebagai produk pilihan di CMS."
-						/>
-					)
-				}
-
-				<PromoBanner
-					kicker="Slot promo"
-					title="Banner promo belum diisi"
-					subtitle="Materi promo belum tersedia. Isi judul, gambar, dan tautan melalui CMS sebelum publikasi."
-					meta="DEMO — bukan penawaran berlaku"
-					tone="gradient"
-				/>
-			</div>
-		</Container>
-	</section>
-
-	<section class="section">
-		<Container>
-			<SectionHead
-				title="Baru masuk"
-				lead="Produk terbaru yang ditambahkan ke katalog."
-				href="/products"
-				linkLabel="Lihat semua produk"
+				linkLabel="Lihat semua"
 			/>
-
-			<div class="featured-layout">
-				{
-					newestProducts.length > 0 ? (
-						<ul class="product-grid">
-							{newestProducts.slice(0, 3).map((product) => (
-								<li>
-									<ProductCard product={product} headingLevel="h3" showExcerpt={false} />
-								</li>
-							))}
-						</ul>
-					) : (
-						<EmptyState
-							title="Katalog masih kosong"
-							description="Produk akan muncul di sini setelah dipublikasikan melalui CMS."
-						/>
-					)
-				}
-
-				<PromoBanner
-					kicker="Slot promo"
-					title="Banner diskon belum diisi"
-					subtitle="Angka diskon hanya tampil setelah pengelola mengisi materi promo yang berlaku."
-					meta="DEMO — bukan penawaran berlaku"
-					tone="soft"
-				/>
-			</div>
+			{
+				newestProducts.length > 0 ? (
+					<ProductGrid products={newestProducts} headingLevel="h3" />
+				) : (
+					<EmptyState
+						title="Katalog masih kosong"
+						description="Produk akan muncul setelah dipublikasikan melalui CMS."
+					/>
+				)
+			}
 		</Container>
 	</section>
 
 	{
-		categories.length > 0 && (
-			<section class="section" aria-labelledby="kategori-banner">
+		recommendedProducts.length > 0 && (
+			<section class="section section--subtle" aria-labelledby="recommended-title">
 				<Container>
 					<SectionHead
-						title="Jelajahi kategori"
-						lead="Mulai dari kelompok produk yang paling relevan."
-						id="kategori-banner"
-						href="/products"
-						linkLabel="Semua kategori"
-					/>
-					<ul class="category-grid">
-						{categories.slice(0, 3).map((category) => (
-							<li>
-								<a class="category-card" href={`/products/category/${category.slug}`}>
-									<span class="category-card__title">{category.label}</span>
-									<span class="category-card__meta">
-										{category.count ?? 0} produk
-									</span>
-									<span class="category-card__cta">
-										Lihat kategori <span aria-hidden="true">›</span>
-									</span>
-								</a>
-							</li>
-						))}
-					</ul>
-				</Container>
-			</section>
-		)
-	}
-
-	{
-		railProducts.length > 0 && (
-			<section class="section" aria-labelledby="katalog-lainnya">
-				<Container>
-					<SectionHead
-						title="Lainnya dari katalog"
-						lead="Geser untuk melihat produk lain yang tersedia."
-						id="katalog-lainnya"
+						title="Produk rekomendasi"
+						lead="Produk yang ditandai sebagai pilihan oleh pengelola katalog."
+						id="recommended-title"
 						href="/products"
 						linkLabel="Lihat katalog"
 					/>
-					<ul class="rail rail--products">
-						{railProducts.map((product) => (
-							<li class="rail__item">
-								<ProductCard product={product} headingLevel="h3" showExcerpt={false} />
-							</li>
-						))}
-					</ul>
+					<ProductGrid products={recommendedProducts} headingLevel="h3" />
 				</Container>
 			</section>
 		)
 	}
 
-	<section class="section" aria-labelledby="artikel-terbaru">
+	<section class="section" aria-labelledby="all-products-title">
+		<Container>
+			<SectionHead
+				title="Semua produk"
+				lead="Ringkasan produk yang tersedia saat ini. Gunakan halaman katalog untuk navigasi lengkap."
+				id="all-products-title"
+				href="/products"
+				linkLabel="Buka katalog"
+			/>
+			{
+				remainingProducts.length > 0 ? (
+					<ProductGrid products={remainingProducts} headingLevel="h3" />
+				) : allProducts.length === 0 ? (
+					<EmptyState
+						title="Belum ada produk"
+						description="Produk yang dipublikasikan melalui CMS akan tampil di sini."
+					/>
+				) : (
+					<EmptyState
+						title="Semua produk sudah ditampilkan"
+						description="Buka katalog untuk melihat navigasi produk lengkap."
+					/>
+				)
+			}
+		</Container>
+	</section>
+
+	<section class="section" aria-labelledby="latest-posts-title">
 		<Container>
 			<SectionHead
 				title="Artikel terbaru"
-				lead="Panduan dan catatan yang relevan dengan produk dan teknologi."
-				id="artikel-terbaru"
+				lead="Panduan dan catatan untuk membantu memahami pilihan produk."
+				id="latest-posts-title"
 				href="/posts"
 				linkLabel="Lihat semua artikel"
 			/>
-
 			{
-				posts.length === 0 ? (
+				posts.length > 0 ? (
+					<PostGrid posts={posts} headingLevel="h3" />
+				) : (
 					<EmptyState
 						title="Belum ada artikel"
-						description="Artikel akan muncul di sini setelah dipublikasikan melalui CMS."
+						description="Artikel akan muncul setelah dipublikasikan melalui CMS."
 					/>
-				) : (
-					<PostGrid posts={posts} headingLevel="h3" />
 				)
 			}
 		</Container>
@@ -293,118 +229,77 @@ const heroSlides = [
 </Base>
 
 <style>
-	.quick-grid {
+	.catalog-intro {
+		padding-block: clamp(2.5rem, 5vw, 4.5rem);
+		background: var(--color-surface-muted);
+		border-bottom: 1px solid var(--color-border);
+	}
+
+	.catalog-intro__inner {
 		display: grid;
-		gap: var(--space-4);
-		margin: 0;
-		padding: 0;
-		list-style: none;
-	}
-
-	.quick-grid > li {
-		display: flex;
-	}
-
-	.quick-grid > li > :global(*) {
-		flex: 1;
-	}
-
-	.featured-layout {
-		display: grid;
+		align-items: end;
 		gap: var(--space-6);
 	}
 
-	.product-grid {
+	.catalog-intro h1 {
+		max-width: 48rem;
+		margin-top: var(--space-2);
+		margin-bottom: var(--space-4);
+	}
+
+	.catalog-intro p:not(.eyebrow) {
+		max-width: 46rem;
+		margin: 0;
+		color: var(--color-ink-soft);
+	}
+
+	.brand-grid,
+	.category-grid {
 		display: grid;
 		grid-template-columns: repeat(2, minmax(0, 1fr));
-		gap: var(--space-4);
+		gap: var(--space-3);
 		margin: 0;
 		padding: 0;
 		list-style: none;
 	}
 
-	.product-grid > li,
-	.rail__item {
+	.brand-grid > li,
+	.category-grid > li {
 		display: flex;
 	}
 
-	.product-grid > li > :global(*),
-	.rail__item > :global(*) {
+	.brand-grid > li > :global(*),
+	.category-grid > li > :global(*) {
 		flex: 1;
 	}
 
-	.category-grid {
-		display: grid;
-		gap: var(--space-4);
-		margin: 0;
-		padding: 0;
-		list-style: none;
+	.section--subtle {
+		padding-block: var(--space-10);
+		background: var(--color-surface-muted);
+		border-block: 1px solid var(--color-border);
 	}
 
-	.category-card {
-		display: flex;
-		flex-direction: column;
-		gap: var(--space-2);
-		height: 100%;
-		padding: var(--space-6);
-		background:
-			var(--gradient-promo-soft);
-		border-radius: var(--radius-xl);
-		color: var(--color-ink);
-		text-decoration: none;
-		transition: transform 160ms ease;
-	}
-
-	.category-card:hover {
-		transform: translateY(-2px);
-		color: var(--color-ink);
-	}
-
-	.category-card__title {
-		font-family: var(--font-display);
-		font-size: var(--text-xl);
-		font-weight: 700;
-	}
-
-	.category-card__meta {
-		color: var(--color-ink-soft);
-		font-size: var(--text-sm);
-	}
-
-	.category-card__cta {
-		margin-top: auto;
-		padding-top: var(--space-4);
-		color: var(--color-accent-hover);
-		font-size: var(--text-sm);
-		font-weight: 700;
-	}
-
-	@media (min-width: 48rem) {
-		.quick-grid {
-			grid-template-columns: repeat(2, minmax(0, 1fr));
-		}
-
-		.product-grid {
-			grid-template-columns: repeat(3, minmax(0, 1fr));
+	@media (min-width: 40rem) {
+		.brand-grid {
+			grid-template-columns: repeat(4, minmax(0, 1fr));
 		}
 
 		.category-grid {
-			grid-template-columns: repeat(3, minmax(0, 1fr));
+			grid-template-columns: repeat(4, minmax(0, 1fr));
 		}
 	}
 
 	@media (min-width: 64rem) {
-		.quick-grid {
-			grid-template-columns: repeat(4, minmax(0, 1fr));
+		.catalog-intro__inner {
+			grid-template-columns: minmax(0, 1fr) auto;
 		}
 
-		.featured-layout {
-			grid-template-columns: minmax(0, 1fr) minmax(16rem, 20rem);
-			align-items: stretch;
+		.brand-grid {
+			grid-template-columns: repeat(5, minmax(0, 1fr));
 		}
 
-		.product-grid {
-			grid-template-columns: repeat(3, minmax(0, 1fr));
+		.category-grid {
+			grid-template-columns: repeat(8, minmax(0, 1fr));
 		}
 	}
 </style>

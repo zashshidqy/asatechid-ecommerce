@@ -219,10 +219,10 @@ function auditPage(path, page, options = {}) {
 
 async function auditSitemap() {
 	const index = await fetchPage("/sitemap.xml");
-	if (!index) return;
+	if (!index) return [];
 	if (index.response.status !== 200) {
 		fail(`/sitemap.xml: expected 200, got ${index.response.status}`);
-		return;
+		return [];
 	}
 	const children = [...index.body.matchAll(/<loc>([^<]+)<\/loc>/g)].map((match) => match[1]);
 	if (children.length === 0) fail("/sitemap.xml: no child sitemaps");
@@ -250,6 +250,7 @@ async function auditSitemap() {
 		if (canonical !== url) fail(`${parsed.pathname}: sitemap URL does not match canonical`);
 	}
 	pass(`sitemap: ${urls.length} URL(s) checked`);
+	return urls.map((url) => new URL(url).pathname);
 }
 
 async function auditRobots() {
@@ -297,24 +298,31 @@ async function auditAdminSurface() {
 	pass("admin surface: dev bypass disabled, API requires auth, admin redirects to login");
 }
 
-// Category archives follow taxonomy data (seed or admin edits), so the audited
-// slug is discovered from the homepage instead of being hardcoded to a seed
-// value that may no longer exist.
-const homePage = await fetchPage("/");
-const categoryPath = homePage?.body.match(
-	/href="(\/products\/category\/[a-z0-9-]+)"/,
-)?.[1];
+const sitemapPaths = await auditSitemap();
+const firstSitemapPath = (pattern) => sitemapPaths.find((path) => pattern.test(path));
+const dynamicRoutes = [
+	firstSitemapPath(/^\/products\/(?!category\/)[^/]+$/),
+	firstSitemapPath(/^\/posts\/[^/]+$/),
+	firstSitemapPath(/^\/products\/category\/[^/]+$/),
+	firstSitemapPath(/^\/category\/[^/]+$/),
+	firstSitemapPath(/^\/tag\/[^/]+$/),
+].filter(Boolean);
+
+if (sitemapPaths.some((path) => path.startsWith("/products/")) &&
+	!dynamicRoutes.some((path) => /^\/products\/(?!category\/)[^/]+$/.test(path))) {
+	fail("sitemap: product URLs exist but no product detail route was discovered");
+}
+if (sitemapPaths.some((path) => path.startsWith("/posts/")) &&
+	!dynamicRoutes.some((path) => /^\/posts\/[^/]+$/.test(path))) {
+	fail("sitemap: post URLs exist but no post detail route was discovered");
+}
 
 const coreRoutes = [
 	["/", 200],
 	["/products", 200],
 	["/posts", 200],
 	["/about", 200],
-	["/products/produk-demo-alpha", 200],
-	["/posts/panduan-memilih-produk-demo", 200],
-	["/category/general", 200],
-	["/tag/starter", 200],
-	...(categoryPath ? [[categoryPath, 200]] : []),
+	...dynamicRoutes.map((path) => [path, 200]),
 	["/404", 404, true],
 	["/tidak-ada-halaman", 404, true],
 ];
@@ -323,8 +331,6 @@ for (const [path, status, noindex] of coreRoutes) {
 	const page = await fetchPage(path);
 	if (page) auditPage(path, page, { status, noindex });
 }
-
-await auditSitemap();
 await auditRobots();
 await auditInternalLinks();
 await auditAdminSurface();
