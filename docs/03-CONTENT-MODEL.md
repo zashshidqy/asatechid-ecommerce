@@ -46,6 +46,21 @@ Supports: `drafts`, `revisions`. Belum ada halaman publik merek pada Phase 2.
 | `logo` | image | Opsional. |
 | `website` | url | Opsional; belum dirender sebagai tautan publik. |
 
+### `product_category_profiles` — non-routable
+
+Supports: `drafts`, `revisions`. Collection pendamping karena term taxonomy EmDash
+1.3 hanya menyediakan label, slug, parent, dan deskripsi; term tidak memiliki field
+media kustom.
+
+| Field | Type | Catatan |
+|---|---|---|
+| `name` | string, required | Label admin agar entri mudah dikenali. |
+| `taxonomy_slug` | slug, required, unique, indexed | Harus sama persis dengan slug term `product_category`. |
+| `icon` | image | Ikon/foto kategori; AVIF, JPEG, PNG, atau WebP. |
+
+Storefront mencocokkan `taxonomy_slug` dengan slug term. Gambar CMS diprioritaskan;
+bila entri/gambar belum ada, tile memakai SVG kontekstual bawaan.
+
 ### `posts` — `/posts/{slug}`
 
 Supports: `drafts`, `revisions`, `preview`, `scheduling`, `search`, `seo`.

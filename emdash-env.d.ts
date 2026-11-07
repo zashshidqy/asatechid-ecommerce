@@ -51,6 +51,21 @@ export interface Post {
   terms?: Record<string, TaxonomyTerm[]>;
 }
 
+export interface ProductCategoryProfile {
+  id: string;
+  slug: string | null;
+  status: string;
+  name: string;
+  taxonomy_slug: string;
+  icon?: { id: string; src?: string; alt?: string; caption?: string; width?: number; height?: number; filename?: string; mimeType?: string; blurhash?: string; dominantColor?: string; focalX?: number; focalY?: number; provider?: string; previewUrl?: string; meta?: Record<string, unknown>; darkVariant?: { id: string; src?: string; alt?: string; caption?: string; width?: number; height?: number; filename?: string; mimeType?: string; blurhash?: string; dominantColor?: string; focalX?: number; focalY?: number; provider?: string; previewUrl?: string; meta?: Record<string, unknown> } };
+  createdAt: Date;
+  updatedAt: Date;
+  publishedAt: Date | null;
+  byline?: BylineSummary | null;
+  bylines?: ContentBylineCredit[];
+  terms?: Record<string, TaxonomyTerm[]>;
+}
+
 export interface Product {
   id: string;
   slug: string | null;
@@ -87,6 +102,7 @@ declare module "emdash" {
     brands: Brand;
     pages: Page;
     posts: Post;
+    product_category_profiles: ProductCategoryProfile;
     products: Product;
   }
   interface EmDashCollectionReferences {

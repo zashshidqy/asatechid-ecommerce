@@ -339,7 +339,7 @@ Tujuan: selaraskan UI publik dengan `docs/DESIGN.md` versi 2026-11-02 tanpa meny
 ### 9.2 P0 — Komponen katalog reusable
 
 - [x] Tambah `BrandTile` memakai data CMS/logo; homepage menyembunyikan section bila collection kosong. Tile belum menjadi tautan karena halaman merek belum diputuskan.
-- [x] Tambah `CategoryTile` reusable dengan tinggi konsisten, count nyata, dan ikon generik dekoratif.
+- [x] Tambah `CategoryTile` reusable dengan tinggi konsisten, count nyata, image kategori dari collection EmDash `product_category_profiles`, dan ikon SVG kontekstual sebagai fallback.
 - [x] `SectionHead` reusable tetap dipakai untuk heading + aksi.
 - [x] Selaraskan `ProductCard`: gambar 1:1 `object-contain`, nama 2 baris, harga tabular, fallback gambar, dan availability state. Harga pembanding, rating, jumlah terjual, dan stok numerik tidak dirender karena belum ada di schema.
 - [x] `ProductGrid`, empty state, breadcrumb, dan pagination cursor dasar tetap dipakai; grid menjadi 2/3/4/5 kolom responsif.

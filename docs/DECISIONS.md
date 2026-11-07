@@ -1,5 +1,19 @@
 # Technical Decisions (ADR ringkas)
 
+## ADR-036 — Metadata ikon kategori memakai collection pendamping
+
+**Status:** diterima (Phase 2)
+
+**Konteks:** Term taxonomy EmDash 1.3 mendukung label, slug, parent, dan deskripsi, tetapi tidak menyediakan custom image field. Admin harus dapat mengunggah ikon kategori lewat Media Library tanpa mengganti route canonical atau taxonomy produk.
+
+**Keputusan:** Tambah collection non-routable `product_category_profiles` dengan `name`, `taxonomy_slug` unik, dan `icon` bertipe image. Storefront mencocokkan profil ke `product_category` berdasarkan slug, memprioritaskan gambar CMS, lalu memakai `CategoryIcon.astro` sebagai fallback.
+
+**Konsekuensi:**
+- Kategori dan assignment produk tetap dikelola lewat taxonomy `product_category`.
+- Ikon dikelola lewat menu **Ikon Kategori Produk** di EmDash.
+- Editor harus menjaga `taxonomy_slug` sama dengan slug taxonomy; constraint unik mencegah dua profil untuk slug sama.
+- Schema database yang sudah ada harus dievolusi terpisah dari deploy kode; seed hanya menjaga fresh install tetap sinkron.
+
 ## ADR-001 — Baseline Astro + EmDash dari template Starter (Node.js)
 
 **Status:** diterima (Phase 0)

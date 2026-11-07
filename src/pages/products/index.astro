@@ -10,6 +10,10 @@ import EmptyState from "../../components/EmptyState.astro";
 import ProductGrid from "../../components/ProductGrid.astro";
 import CategoryTile from "../../components/CategoryTile.astro";
 import CatalogLayout from "../../components/CatalogLayout.astro";
+import {
+	mapCategoryIcons,
+	PRODUCT_CATEGORY_PROFILE_COLLECTION,
+} from "../../utils/category-profile";
 
 const cursor = Astro.url.searchParams.get("cursor") || undefined;
 
@@ -29,14 +33,20 @@ const termsResult = await getTaxonomyTermsWithCacheHint("product_category", {
 	includeCounts: true,
 });
 
-if (termsResult.error) {
-	console.error("Failed to load product categories:", termsResult.error);
+const categoryProfilesResult = await getEmDashCollection(
+	PRODUCT_CATEGORY_PROFILE_COLLECTION,
+	{ limit: 100 },
+);
+if (categoryProfilesResult.error) {
+	console.error("Failed to load category icons:", categoryProfilesResult.error);
 	return new Response("Tidak dapat memuat kategori produk.", { status: 500 });
 }
+const categoryIcons = mapCategoryIcons(categoryProfilesResult.entries);
 
 if (Astro.cache?.enabled) {
 	Astro.cache.set(cacheHint);
 	Astro.cache.set(termsResult.cacheHint);
+	Astro.cache.set(categoryProfilesResult.cacheHint);
 }
 
 const resultLabel = `${products.length} produk${nextCursor ? " pada halaman ini" : ""}`;
@@ -70,6 +80,7 @@ const resultLabel = `${products.length} produk${nextCursor ? " pada halaman ini"
 								<CategoryTile
 									title={term.label}
 									count={term.count}
+									icon={categoryIcons.get(term.slug.toLowerCase())}
 									href={`/products/category/${term.slug}`}
 								/>
 							</li>

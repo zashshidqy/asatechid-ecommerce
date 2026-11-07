@@ -139,6 +139,53 @@
 			]
 		},
 		{
+			"slug": "product_category_profiles",
+			"label": "Ikon Kategori Produk",
+			"labelSingular": "Ikon Kategori Produk",
+			"description": "Ikon kategori yang tampil di storefront. Isi slug taxonomy persis seperti slug pada Kategori Produk.",
+			"routable": false,
+			"supports": [
+				"drafts",
+				"revisions"
+			],
+			"titleField": "name",
+			"admin": {
+				"listColumns": [
+					"name",
+					"taxonomy_slug"
+				]
+			},
+			"fields": [
+				{
+					"slug": "name",
+					"label": "Nama kategori",
+					"type": "string",
+					"required": true
+				},
+				{
+					"slug": "taxonomy_slug",
+					"label": "Slug Kategori Produk",
+					"type": "slug",
+					"required": true,
+					"unique": true,
+					"indexed": true
+				},
+				{
+					"slug": "icon",
+					"label": "Ikon atau gambar kategori",
+					"type": "image",
+					"validation": {
+						"allowedMimeTypes": [
+							"image/avif",
+							"image/jpeg",
+							"image/png",
+							"image/webp"
+						]
+					}
+				}
+			]
+		},
+		{
 			"slug": "products",
 			"label": "Produk",
 			"labelSingular": "Produk",

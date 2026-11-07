@@ -1,18 +1,27 @@
 ---
+import type { ImageValue } from "emdash";
+import { Image } from "emdash/ui";
+import CategoryIcon from "./CategoryIcon.astro";
+
 interface Props {
 	title: string;
 	href: string;
 	count?: number | null;
+	icon?: ImageValue | null;
 }
 
-const { title, href, count } = Astro.props;
+const { title, href, count, icon = null } = Astro.props;
 ---
 
 <a class="category-tile" href={href}>
-	<span class="category-tile__media" aria-hidden="true">
-		<svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-			<path d="M4 7.5h16M7.5 4v16M4 16.5h16M16.5 4v16" />
-		</svg>
+	<span class:list={["category-tile__media", { "category-tile__media--image": icon }]}>
+		{
+			icon ? (
+				<Image image={icon} width={64} height={64} />
+			) : (
+				<CategoryIcon category={`${title} ${href}`} />
+			)
+		}
 	</span>
 	<span class="category-tile__body">
 		<strong>{title}</strong>
@@ -49,7 +58,7 @@ const { title, href, count } = Astro.props;
 		transform: translateY(-2px);
 	}
 
-	.category-tile:hover .category-tile__media {
+	.category-tile:hover .category-tile__media:not(.category-tile__media--image) {
 		background: var(--color-accent);
 		color: var(--color-accent-contrast);
 	}
@@ -57,12 +66,30 @@ const { title, href, count } = Astro.props;
 	.category-tile__media {
 		display: grid;
 		place-items: center;
-		width: 3rem;
-		height: 3rem;
+		width: 3.5rem;
+		height: 3.5rem;
+		padding: var(--space-2);
 		background: var(--color-accent-soft);
 		border-radius: var(--radius-md);
 		color: var(--color-accent-hover);
 		transition: background-color 160ms ease, color 160ms ease;
+	}
+
+	.category-tile__media--image {
+		overflow: hidden;
+		padding: 0;
+		background: var(--color-surface-muted);
+	}
+
+	.category-tile__media--image :global(picture),
+	.category-tile__media--image :global(img) {
+		display: block;
+		width: 100%;
+		height: 100%;
+	}
+
+	.category-tile__media--image :global(img) {
+		object-fit: cover;
 	}
 
 	.category-tile__body {

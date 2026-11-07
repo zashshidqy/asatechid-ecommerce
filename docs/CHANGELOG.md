@@ -2,6 +2,36 @@
 
 Format ringkas per fase. Tanggal memakai ISO (YYYY-MM-DD).
 
+## 2026-11-07 — Ikon kategori dapat dikelola lewat EmDash
+
+### Added
+- Collection non-routable `product_category_profiles` dengan field nama, slug taxonomy unik, dan image untuk unggah ikon/foto melalui EmDash Media Library.
+- `src/utils/category-profile.ts` memetakan profil CMS ke taxonomy berdasarkan slug.
+
+### Changed
+- `src/components/CategoryTile.astro` memprioritaskan image dari CMS dan memakai ikon SVG kontekstual sebagai fallback.
+- `src/pages/index.astro` dan `src/pages/products/index.astro` memuat profil ikon beserta cache hint-nya.
+- Schema lokal aktif dan `seed/seed.json` disinkronkan tanpa memodifikasi tabel internal EmDash.
+
+### Verified
+- `npx emdash seed seed/seed.json --validate` lulus.
+- `npm run typecheck` lulus.
+- `npm test` → 35/35 lulus.
+- `npm run build` sukses; warning chunk admin >500 kB tetap ada.
+
+## 2026-11-07 — Ikon kontekstual kategori pilihan
+
+### Added
+- `src/components/CategoryIcon.astro` — ikon SVG orisinal untuk kategori CCTV/kamera, DVR, NVR, switch, monitor, power supply, PoE/midspan, aksesori, dan fallback perangkat umum.
+
+### Changed
+- `src/components/CategoryTile.astro` memilih ikon berdasarkan nama/slug kategori, menggantikan ikon grid generik yang sama pada seluruh kategori. Ikon mengikuti `currentColor`, token, hover, dan tidak memakai aset pihak ketiga.
+
+### Verified
+- `npm run typecheck` lulus.
+- `npm test` → 35/35 lulus.
+- `npm run build` sukses; warning chunk admin >500 kB tetap ada.
+
 ## 2026-11-07 — Pelunakan visual storefront
 
 ### Changed
