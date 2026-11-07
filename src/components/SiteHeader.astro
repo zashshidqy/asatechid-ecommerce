@@ -1,5 +1,5 @@
 ---
-import { getMenuWithCacheHint } from "emdash";
+import { getMenuWithCacheHint, getTaxonomyTermsWithCacheHint } from "emdash";
 import LiveSearch from "emdash/ui/search";
 import Logo from "./Logo.astro";
 import type { MediaReference } from "../utils/site-identity";
@@ -25,9 +25,16 @@ const searchRouteMap = {
 };
 
 const { data: menu, cacheHint } = await getMenuWithCacheHint("primary");
-if (Astro.cache?.enabled) Astro.cache.set(cacheHint);
+const categoryResult = await getTaxonomyTermsWithCacheHint("product_category", {
+	includeCounts: true,
+});
+if (Astro.cache?.enabled) {
+	Astro.cache.set(cacheHint);
+	Astro.cache.set(categoryResult.cacheHint);
+}
 
 const items = menu?.items ?? [];
+const categoryLinks = categoryResult.data.slice(0, 6);
 const path = Astro.url.pathname.replace(/\/+$/, "") || "/";
 
 function isActive(url: string): boolean {
@@ -43,7 +50,7 @@ function isActive(url: string): boolean {
 	<div class="container site-header__main">
 		<Logo title={siteTitle} logo={siteLogo} />
 
-		<div class="site-search" role="search" aria-label="Pencarian situs">
+		<div class="site-search site-search--desktop" role="search" aria-label="Pencarian situs">
 			<LiveSearch
 				placeholder="Cari produk, merek, atau artikel..."
 				collections={searchCollections}
@@ -57,16 +64,6 @@ function isActive(url: string): boolean {
 		<details class="nav-disclosure">
 			<summary class="btn btn--secondary btn--sm">Menu</summary>
 			<nav class="nav-disclosure__panel" aria-label="Navigasi seluler">
-				<div class="nav-disclosure__search">
-					<LiveSearch
-						placeholder="Cari produk, merek, atau artikel..."
-						collections={searchCollections}
-						routeMap={searchRouteMap}
-					>
-						<span slot="loading">Mencari…</span>
-						<span slot="no-results">Tidak ada hasil.</span>
-					</LiveSearch>
-				</div>
 				<a href="/products" aria-current={isActive("/products") ? "page" : undefined}>Katalog produk</a>
 				{
 					items.filter((item) => item.url !== "/products").map((item) => (
@@ -82,13 +79,44 @@ function isActive(url: string): boolean {
 				}
 			</nav>
 		</details>
+
+		<div class="site-search site-search--mobile" role="search" aria-label="Pencarian situs seluler">
+			<LiveSearch
+				placeholder="Cari produk atau artikel..."
+				collections={searchCollections}
+				routeMap={searchRouteMap}
+			>
+				<span slot="loading">Mencari…</span>
+				<span slot="no-results">Tidak ada hasil.</span>
+			</LiveSearch>
+		</div>
 	</div>
 
 	<div class="site-header__nav-row">
 		<div class="container site-header__nav-inner">
-			<a class="catalog-link" href="/products" aria-current={isActive("/products") ? "page" : undefined}>
-				<span aria-hidden="true">☰</span> Semua produk
-			</a>
+			<div class="catalog-menu">
+				<a class="catalog-link" href="/products" aria-current={isActive("/products") ? "page" : undefined}>
+					<span aria-hidden="true">☰</span> Semua kategori
+				</a>
+				{
+					categoryLinks.length > 0 && (
+						<div class="catalog-menu__panel">
+							<p>Jelajahi kategori</p>
+							<ul>
+								{categoryLinks.map((category) => (
+									<li>
+										<a href={`/products/category/${category.slug}`}>
+											<span>{category.label}</span>
+											<small>{category.count} produk</small>
+										</a>
+									</li>
+								))}
+							</ul>
+							<a class="catalog-menu__all" href="/products">Lihat seluruh katalog</a>
+						</div>
+					)
+				}
+			</div>
 			<nav class="site-nav" aria-label="Navigasi utama">
 				{
 					items.filter((item) => item.url !== "/products").map((item) => (
@@ -113,22 +141,47 @@ function isActive(url: string): boolean {
 	.site-header {
 		position: relative;
 		z-index: 10;
-		background: var(--color-surface);
-		border-bottom: 1px solid var(--color-border);
+		background: var(--color-header);
+		border-bottom: 1px solid var(--color-header-hover);
+		box-shadow: var(--shadow-sm);
+	}
+
+	.site-header :global(.brand) {
+		color: var(--color-header-text);
+	}
+
+	.site-header :global(.brand__mark) {
+		background: var(--color-accent);
+		color: var(--color-accent-contrast);
+	}
+
+	.site-header :global(.brand__sub) {
+		color: rgb(255 255 255 / 0.72);
 	}
 
 	.site-header__main {
-		display: flex;
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) auto;
 		align-items: center;
-		gap: var(--space-4);
+		gap: var(--space-3) var(--space-4);
 		min-height: var(--header-height);
+		padding-block: var(--space-3);
 	}
 
 	.site-search {
+		min-width: 0;
+	}
+
+	.site-search--desktop {
 		display: none;
 		flex: 1;
 		max-width: 42rem;
 		margin-left: auto;
+	}
+
+	.site-search--mobile {
+		grid-column: 1 / -1;
+		width: 100%;
 	}
 
 	.nav-disclosure {
@@ -139,6 +192,9 @@ function isActive(url: string): boolean {
 	.nav-disclosure > summary {
 		list-style: none;
 		user-select: none;
+		background: transparent;
+		border-color: rgb(255 255 255 / 0.5);
+		color: var(--color-header-text);
 	}
 
 	.nav-disclosure > summary::-webkit-details-marker {
@@ -157,12 +213,6 @@ function isActive(url: string): boolean {
 		border: 1px solid var(--color-border);
 		border-radius: var(--radius-md);
 		box-shadow: var(--shadow-md);
-	}
-
-	.nav-disclosure__search {
-		margin-bottom: var(--space-2);
-		padding: var(--space-2) var(--space-2) var(--space-3);
-		border-bottom: 1px solid var(--color-border);
 	}
 
 	.nav-disclosure__panel a {
@@ -185,7 +235,9 @@ function isActive(url: string): boolean {
 
 	.site-header__nav-row {
 		display: none;
-		border-top: 1px solid var(--color-border);
+		background: var(--color-surface);
+		border-top: 1px solid rgb(255 255 255 / 0.12);
+		border-bottom: 1px solid var(--color-border);
 	}
 
 	.site-header__nav-inner {
@@ -193,6 +245,11 @@ function isActive(url: string): boolean {
 		align-items: center;
 		gap: var(--space-6);
 		min-height: 3rem;
+	}
+
+	.catalog-menu {
+		position: relative;
+		align-self: stretch;
 	}
 
 	.catalog-link {
@@ -212,6 +269,74 @@ function isActive(url: string): boolean {
 	.catalog-link[aria-current="page"] {
 		background: var(--color-accent-hover);
 		color: var(--color-accent-contrast);
+	}
+
+	.catalog-menu__panel {
+		position: absolute;
+		top: 100%;
+		left: 0;
+		display: none;
+		width: 22rem;
+		padding: var(--space-4);
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-top: 3px solid var(--color-accent);
+		box-shadow: var(--shadow-md);
+	}
+
+	.catalog-menu:hover .catalog-menu__panel,
+	.catalog-menu:focus-within .catalog-menu__panel {
+		display: block;
+	}
+
+	.catalog-menu__panel p {
+		margin-bottom: var(--space-2);
+		color: var(--color-muted);
+		font-size: var(--text-xs);
+		font-weight: 700;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+	}
+
+	.catalog-menu__panel ul {
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+
+	.catalog-menu__panel li a {
+		display: flex;
+		min-height: 2.75rem;
+		align-items: center;
+		justify-content: space-between;
+		gap: var(--space-3);
+		padding: var(--space-2) var(--space-3);
+		border-radius: var(--radius-sm);
+		color: var(--color-ink);
+		font-size: var(--text-sm);
+		font-weight: 650;
+		text-decoration: none;
+	}
+
+	.catalog-menu__panel li a:hover {
+		background: var(--color-surface-muted);
+		color: var(--color-accent-hover);
+	}
+
+	.catalog-menu__panel small {
+		color: var(--color-muted);
+		font-weight: 400;
+		white-space: nowrap;
+	}
+
+	.catalog-menu__all {
+		display: block;
+		margin-top: var(--space-2);
+		padding: var(--space-3);
+		border-top: 1px solid var(--color-border);
+		font-size: var(--text-sm);
+		font-weight: 700;
+		text-decoration: none;
 	}
 
 	.site-nav {
@@ -246,8 +371,17 @@ function isActive(url: string): boolean {
 	}
 
 	@media (min-width: 48rem) {
-		.site-search {
+		.site-header__main {
+			display: flex;
+			padding-block: 0;
+		}
+
+		.site-search--desktop {
 			display: block;
+		}
+
+		.site-search--mobile {
+			display: none;
 		}
 
 		.nav-disclosure {

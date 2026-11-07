@@ -37,8 +37,13 @@ h6 {
 	font-family: var(--font-display);
 	font-weight: 650;
 	line-height: var(--leading-tight);
-	letter-spacing: -0.015em;
+	letter-spacing: -0.02em;
 	text-wrap: balance;
+}
+
+h1,
+h2 {
+	font-weight: 750;
 }
 
 h1 {
@@ -164,7 +169,7 @@ textarea {
 }
 
 .section {
-	margin-block: clamp(2.5rem, 5vw, 4rem);
+	margin-block: clamp(3rem, 6vw, 5rem);
 }
 
 .section--tight {
@@ -232,8 +237,21 @@ textarea {
 /* ---------- Page header / hero ---------- */
 
 .page-head {
+	position: relative;
 	max-width: 46rem;
 	margin-bottom: var(--space-10);
+	padding-left: var(--space-5);
+}
+
+.page-head::before {
+	position: absolute;
+	top: 0.15em;
+	bottom: 0.15em;
+	left: 0;
+	width: 4px;
+	background: var(--color-accent);
+	border-radius: var(--radius-pill);
+	content: "";
 }
 
 .page-head__eyebrow {
@@ -392,17 +410,19 @@ textarea {
 	height: 100%;
 	background: var(--color-surface);
 	border: 1px solid var(--color-border);
-	border-radius: var(--radius-md);
+	border-radius: var(--radius-lg);
 	overflow: hidden;
 	box-shadow: var(--shadow-card);
 	transition:
 		border-color 160ms ease,
-		box-shadow 160ms ease;
+		box-shadow 160ms ease,
+		transform 160ms ease;
 }
 
 .card:hover {
-	border-color: var(--color-border-strong);
+	border-color: var(--color-accent-light);
 	box-shadow: var(--shadow-card-hover);
+	transform: translateY(-3px);
 }
 
 .card__media {
@@ -662,11 +682,26 @@ textarea {
 	justify-content: space-between;
 	gap: var(--space-4);
 	margin-bottom: var(--space-8);
+	padding-bottom: var(--space-4);
+	border-bottom: 1px solid var(--color-border);
 }
 
 .section-head__title {
+	position: relative;
 	margin: 0;
+	padding-left: var(--space-4);
 	font-size: var(--text-2xl);
+}
+
+.section-head__title::before {
+	position: absolute;
+	top: 0.1em;
+	bottom: 0.1em;
+	left: 0;
+	width: 4px;
+	background: var(--color-accent);
+	border-radius: var(--radius-pill);
+	content: "";
 }
 
 .section-head__lead {

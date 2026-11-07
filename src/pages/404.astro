@@ -7,6 +7,7 @@ import Button from "../components/Button.astro";
 
 <Base title="Halaman tidak ditemukan" robots="noindex, nofollow">
 	<Container>
+		<div class="error-code" aria-hidden="true">404</div>
 		<EmptyState
 			title="Halaman tidak ditemukan"
 			description="Alamat yang Anda buka mungkin salah ketik, sudah dipindahkan, atau tidak pernah ada."
@@ -19,3 +20,20 @@ import Button from "../components/Button.astro";
 		</EmptyState>
 	</Container>
 </Base>
+
+<style>
+	.error-code {
+		margin-bottom: calc(-1 * var(--space-6));
+		color: var(--color-border);
+		font-size: clamp(5rem, 18vw, 10rem);
+		font-weight: 800;
+		letter-spacing: -0.08em;
+		line-height: 0.85;
+	}
+
+	:global(.empty-state) {
+		position: relative;
+		max-width: 44rem;
+		border-left: 4px solid var(--color-accent);
+	}
+</style>

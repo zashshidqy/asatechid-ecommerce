@@ -9,6 +9,7 @@ import Container from "../../../components/Container.astro";
 import Breadcrumbs from "../../../components/Breadcrumbs.astro";
 import EmptyState from "../../../components/EmptyState.astro";
 import ProductGrid from "../../../components/ProductGrid.astro";
+import CatalogLayout from "../../../components/CatalogLayout.astro";
 
 const slug = decodeSlug(Astro.params.slug);
 const termsResult = await getTaxonomyTermsWithCacheHint("product_category", {
@@ -28,7 +29,7 @@ const { entries: products, cacheHint, nextCursor, error } =
 	await getEmDashCollection("products", {
 		where: { product_category: term.slug },
 		orderBy: { published_at: "desc" },
-		limit: 12,
+		limit: 20,
 		cursor,
 	});
 
@@ -41,6 +42,8 @@ if (Astro.cache?.enabled) {
 	Astro.cache.set(termsResult.cacheHint);
 	Astro.cache.set(cacheHint);
 }
+
+const resultLabel = `${products.length} produk${nextCursor ? " pada halaman ini" : ""}`;
 ---
 
 <Base
@@ -56,54 +59,62 @@ if (Astro.cache?.enabled) {
 			]}
 		/>
 
-		<header class="page-head">
-			<p class="page-head__eyebrow">Kategori Produk</p>
+		<header class="page-head catalog-head">
+			<p class="page-head__eyebrow">Kategori produk</p>
 			<h1>{term.label}</h1>
-			<p class="page-head__lead">Produk dalam kategori {term.label}.</p>
-			<p>
-				<a class="btn btn--secondary btn--sm" href="/products">
-					Lihat semua produk
-				</a>
-			</p>
+			<p class="page-head__lead">Jelajahi produk dalam kategori {term.label}.</p>
 		</header>
 
-		{
-			products.length === 0 ? (
-				<EmptyState
-					title="Belum ada produk"
-					description={`Belum ada produk yang dipublikasikan dalam kategori ${term.label}.`}
-				/>
-			) : (
-				<ProductGrid products={products} />
-			)
-		}
+		<CatalogLayout
+			categories={termsResult.data}
+			activeCategory={term.slug}
+			resultLabel={resultLabel}
+		>
+			<span slot="active-filter" class="catalog-chip">Kategori: {term.label}</span>
+			{
+				products.length === 0 ? (
+					<EmptyState
+						title="Produk tidak ditemukan"
+						description={`Belum ada produk yang dipublikasikan dalam kategori ${term.label}.`}
+					>
+						<a class="btn btn--secondary btn--sm" href="/products">Lihat semua produk</a>
+					</EmptyState>
+				) : (
+					<ProductGrid products={products} />
+				)
+			}
 
-		<nav class="pagination" aria-label="Navigasi halaman kategori">
-			{cursor && (
-				<a
-					class="btn btn--secondary btn--sm"
-					href={`/products/category/${term.slug}`}
-				>
-					Halaman pertama
-				</a>
-			)}
-			{nextCursor && (
-				<a
-					class="btn btn--secondary btn--sm"
-					href={`/products/category/${term.slug}?cursor=${encodeURIComponent(nextCursor)}`}
-				>
-					Halaman berikutnya
-				</a>
-			)}
-		</nav>
+			<nav class="pagination" aria-label="Navigasi halaman kategori">
+				{cursor && (
+					<a
+						class="btn btn--secondary btn--sm"
+						href={`/products/category/${term.slug}`}
+					>
+						Halaman pertama
+					</a>
+				)}
+				{nextCursor && (
+					<a
+						class="btn btn--secondary btn--sm"
+						href={`/products/category/${term.slug}?cursor=${encodeURIComponent(nextCursor)}`}
+					>
+						Halaman berikutnya
+					</a>
+				)}
+			</nav>
+		</CatalogLayout>
 	</Container>
 </Base>
 
 <style>
+	.catalog-head {
+		margin-bottom: var(--space-8);
+	}
+
 	.pagination {
 		display: flex;
 		flex-wrap: wrap;
 		gap: var(--space-3);
-		margin-top: var(--space-10);
+		margin-top: var(--space-8);
 	}
 </style>

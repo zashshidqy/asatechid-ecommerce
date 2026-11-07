@@ -306,10 +306,11 @@ const relatedWithTerms = related.map((entry) => ({
 
 	.product__media {
 		overflow: hidden;
-		background: var(--color-surface-muted);
+		background: var(--color-surface);
 		border: 1px solid var(--color-border);
-		border-radius: var(--radius-md);
-		aspect-ratio: 4 / 3;
+		border-radius: var(--radius-lg);
+		box-shadow: var(--shadow-card);
+		aspect-ratio: 1;
 	}
 
 	.product__media img {
@@ -336,6 +337,11 @@ const relatedWithTerms = related.map((entry) => ({
 		flex-direction: column;
 		gap: var(--space-4);
 		align-self: start;
+		padding: var(--space-5);
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-lg);
+		box-shadow: var(--shadow-card);
 	}
 
 	.product__summary h1 {
@@ -361,8 +367,9 @@ const relatedWithTerms = related.map((entry) => ({
 		gap: var(--space-3);
 		margin-top: var(--space-2);
 		padding: var(--space-5);
-		background: var(--color-surface);
+		background: var(--color-surface-muted);
 		border: 1px solid var(--color-border);
+		border-left: 4px solid var(--color-accent);
 		border-radius: var(--radius-md);
 	}
 
@@ -409,9 +416,11 @@ const relatedWithTerms = related.map((entry) => ({
 	}
 
 	.product__section {
-		padding-top: var(--space-8);
-		border-top: 1px solid var(--color-border);
-		margin-top: var(--space-10);
+		margin-top: var(--space-8);
+		padding: var(--space-6);
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-lg);
 	}
 
 	.product__section h2 {
@@ -473,8 +482,13 @@ const relatedWithTerms = related.map((entry) => ({
 
 	@media (min-width: 60rem) {
 		.product__layout {
-			grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
-			gap: var(--space-12);
+			grid-template-columns: minmax(0, 45fr) minmax(0, 55fr);
+			gap: var(--space-8);
+		}
+
+		.product__summary {
+			position: sticky;
+			top: var(--space-4);
 		}
 	}
 </style>

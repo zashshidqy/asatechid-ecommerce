@@ -2,6 +2,76 @@
 
 Format ringkas per fase. Tanggal memakai ISO (YYYY-MM-DD).
 
+## 2026-11-07 — Pelunakan visual storefront
+
+### Changed
+- `src/styles/tokens.css` — permukaan dibuat lebih hangat, header navy dilunakkan, radius diperbesar, dan shadow dibuat lebih natural.
+- `src/styles/global.css` — heading lebih ekspresif, jarak section lebih lega, page/section heading mendapat aksen vertikal, dan kartu memakai radius serta hover lift yang lebih halus.
+- `src/pages/index.astro` — intro mendapat depth dekoratif ringan dan visual card sedikit miring tanpa animasi berat.
+- `src/components/CategoryTile.astro` dan `BrandTile.astro` — hover lebih responsif dengan lift kecil dan perubahan aksen.
+- `src/components/InquiryCta.astro` — CTA memakai surface hangat dan aksen sekunder agar tidak terasa seperti panel administratif.
+
+### Verified
+- `npm run typecheck` lulus.
+- `npm test` → 35/35 lulus, termasuk kontras WCAG AA.
+- `npm run build` sukses; warning chunk admin >500 kB tetap ada.
+
+## 2026-11-07 — Realignment seluruh konsep halaman publik
+
+### Changed
+- `src/components/SiteHeader.astro` — navigasi desktop mendapat menu kategori berbasis taxonomy CMS dengan jumlah produk dan tautan katalog; search tetap dominan, mobile tetap disclosure keyboard-native.
+- `src/components/SiteFooter.astro` — footer commerce memakai permukaan navy industrial, aksen oranye, dan struktur link faktual tanpa payment/courier/contact palsu.
+- `src/pages/products/[slug].astro` — detail produk memakai komposisi galeri 45% / ringkasan 55%, media 1:1, summary card sticky desktop, commerce panel beraksen, dan section informasi terpisah.
+- `src/pages/posts/index.astro` — listing editorial mendapat panel hasil dengan heading dan jumlah artikel.
+- `src/pages/[slug].astro` — halaman informasi memakai surface card industrial dengan heading beraksen.
+- `src/pages/404.astro` — state 404 diperjelas dengan kode visual dan aksi pemulihan valid.
+- Pola seluruh halaman mengikuti konsep dense technical commerce; identitas, aset, data, dan source code Vins Teknik tidak disalin.
+
+### Verified
+- `npm run typecheck` lulus.
+- `npm test` → 35/35 lulus.
+- `npm run build` sukses; warning chunk admin >500 kB tetap ada.
+
+## 2026-11-07 — Katalog product-first terinspirasi pola Vins Teknik
+
+### Added
+- `src/components/CatalogLayout.astro`, `CatalogFilters.astro`, dan `CatalogFilterList.astro` — layout katalog reusable dengan sidebar kategori desktop, disclosure mobile keyboard-native, toolbar jumlah hasil, active chip, dan reset.
+
+### Changed
+- `src/pages/products/index.astro` — listing lebih padat: kategori populer, 20 produk per cursor page, filter kategori, toolbar hasil, dan grid 2/3/4/5 kolom yang sudah ada.
+- `src/pages/products/category/[slug].astro` — memakai layout katalog sama, active filter, reset, serta empty state pemulihan.
+- Adaptasi hanya pola discovery katalog. Brand, aset, produk, harga, rating, promo, cart, dan source code Vins Teknik tidak disalin.
+
+### Verified
+- `npm run typecheck` lulus.
+- `npm test` → 35/35 lulus.
+- `npm run build` sukses; warning chunk admin >500 kB tetap ada.
+
+## 2026-11-07 — Spesifikasi desain ASATECHID Commerce
+
+### Changed
+- `docs/DESIGN.md` ditulis ulang sebagai spesifikasi desain ASATECHID yang ringkas dan implementable: arah visual industrial, token provisional, information architecture aktual, app shell, homepage, product card, katalog, detail produk, artikel, state, aksesibilitas, performa, SEO, dan acceptance checklist.
+- `docs/TODO.md` mendapat Phase 10 terperinci: audit baseline, token/primitif, app shell, homepage, product card, katalog/filter, detail produk, fitur kondisional, serta quality gate. Full checkout digeser menjadi Phase 11.
+- Vins Teknik tetap menjadi referensi pola pengalaman e-commerce, bukan sumber brand, aset, data, source code, atau desain pixel-perfect.
+- Route canonical proyek (`/products`, `/products/category/*`, `/posts`) dan inquiry-first MVP dipertahankan; cart/checkout, promo, rating, tracking, dan fitur lain tetap kondisional pada data/backend nyata.
+
+### Added
+- `src/components/ProductCardSkeleton.astro` — skeleton katalog 1:1 dengan grid responsif dan fallback reduced-motion.
+- Token status `--color-info` beserta pasangan test kontras pada surface.
+
+### Changed
+- `src/components/SiteHeader.astro` — search mobile kini selalu terlihat pada baris kedua; menu disclosure tidak lagi menyembunyikan search; header utama memakai permukaan navy industrial yang kontras dengan nav putih.
+- `src/pages/index.astro` — intro katalog dirombak menjadi hero industrial navy-oranye dengan headline baru, dua CTA valid, dan visual wordmark ASATECHID berbasis CSS.
+- `src/styles/global.css` — kartu mendapat hover lift ringan dan border aksen, tetap tunduk pada reduced motion global.
+- `src/components/SiteFooter.astro` — kelompok “Kontak & layanan” disembunyikan sampai data resmi tersedia.
+- `src/components/ProductCard.astro` — fallback visual berada di belakang media sehingga URL gambar rusak tetap punya state stabil tanpa handler inline.
+- `docs/TODO.md` — Phase 10.0–10.4 dan quality gate diperbarui sesuai hasil slice pertama.
+
+### Verified
+- `npm run typecheck` → 59 file, 0 error / 0 warning / 0 hint.
+- `npm test` → 35/35 lulus.
+- `npm run build` → sukses; warning chunk admin >500 kB tetap ada.
+
 ## 2026-11-02 — Phase 9 P0: realignment storefront katalog
 
 ### Added

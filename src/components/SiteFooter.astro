@@ -37,13 +37,6 @@ const year = new Date().getFullYear();
 				<li><a href="/">Beranda</a></li>
 			</ul>
 		</nav>
-
-		<div class="site-footer__note">
-			<h2 class="site-footer__heading">Kontak & layanan</h2>
-			<p>
-				Kontak resmi, metode pembayaran, dan kurir akan ditampilkan setelah dikonfigurasi pengelola.
-			</p>
-		</div>
 	</div>
 
 	<div class="container site-footer__bottom">
@@ -54,9 +47,9 @@ const year = new Date().getFullYear();
 <style>
 	.site-footer {
 		padding-top: var(--space-12);
-		background: var(--color-surface);
-		border-top: 1px solid var(--color-border);
-		color: var(--color-ink-soft);
+		background: var(--color-header);
+		border-top: 5px solid var(--color-accent);
+		color: rgb(255 255 255 / 0.78);
 		font-size: var(--text-sm);
 	}
 
@@ -66,12 +59,17 @@ const year = new Date().getFullYear();
 		padding-bottom: var(--space-12);
 	}
 
+	.site-footer :global(.brand) {
+		color: var(--color-header-text);
+	}
+
+	.site-footer :global(.brand__sub),
 	.site-footer__tagline,
 	.site-footer__availability {
 		max-width: 24rem;
 		margin-top: var(--space-4);
 		margin-bottom: 0;
-		color: var(--color-muted);
+		color: rgb(255 255 255 / 0.68);
 	}
 
 	.site-footer__availability {
@@ -80,7 +78,7 @@ const year = new Date().getFullYear();
 
 	.site-footer__heading {
 		margin: 0 0 var(--space-3);
-		color: var(--color-ink);
+		color: var(--color-header-text);
 		font-size: var(--text-sm);
 		font-weight: 700;
 	}
@@ -95,25 +93,19 @@ const year = new Date().getFullYear();
 	}
 
 	.site-footer__nav a {
-		color: var(--color-ink-soft);
+		color: rgb(255 255 255 / 0.78);
 		text-decoration: none;
 	}
 
 	.site-footer__nav a:hover {
-		color: var(--color-accent-hover);
+		color: var(--color-highlight);
 		text-decoration: underline;
-	}
-
-	.site-footer__note p {
-		max-width: 24rem;
-		margin: 0;
-		color: var(--color-muted);
 	}
 
 	.site-footer__bottom {
 		padding-block: var(--space-5);
-		border-top: 1px solid var(--color-border);
-		color: var(--color-muted);
+		border-top: 1px solid rgb(255 255 255 / 0.16);
+		color: rgb(255 255 255 / 0.62);
 		font-size: var(--text-xs);
 	}
 
@@ -129,7 +121,7 @@ const year = new Date().getFullYear();
 
 	@media (min-width: 64rem) {
 		.site-footer__inner {
-			grid-template-columns: 1.5fr 0.8fr 0.8fr 1.2fr;
+			grid-template-columns: 1.5fr 0.8fr 0.8fr;
 		}
 	}
 </style>

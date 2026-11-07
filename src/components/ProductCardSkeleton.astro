@@ -1,0 +1,90 @@
+---
+interface Props {
+	count?: number;
+}
+
+const { count = 5 } = Astro.props;
+const items = Array.from({ length: Math.max(1, count) });
+---
+
+<ul class="grid grid--cards product-skeleton-grid" aria-label="Memuat produk" aria-busy="true">
+	{items.map(() => (
+		<li>
+			<div class="product-skeleton" aria-hidden="true">
+				<div class="product-skeleton__media skeleton-pulse"></div>
+				<div class="product-skeleton__body">
+					<div class="product-skeleton__line product-skeleton__line--meta skeleton-pulse"></div>
+					<div class="product-skeleton__line skeleton-pulse"></div>
+					<div class="product-skeleton__line product-skeleton__line--short skeleton-pulse"></div>
+					<div class="product-skeleton__line product-skeleton__line--price skeleton-pulse"></div>
+				</div>
+			</div>
+		</li>
+	))}
+	<span class="sr-only">Produk sedang dimuat.</span>
+</ul>
+
+<style>
+	.product-skeleton-grid {
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+
+	.product-skeleton {
+		height: 100%;
+		overflow: hidden;
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-md);
+	}
+
+	.product-skeleton__media {
+		aspect-ratio: 1;
+		background: var(--color-surface-muted);
+	}
+
+	.product-skeleton__body {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-2);
+		padding: var(--space-4);
+	}
+
+	.product-skeleton__line {
+		height: 0.8rem;
+		background: var(--color-surface-muted);
+		border-radius: var(--radius-sm);
+	}
+
+	.product-skeleton__line--meta {
+		width: 38%;
+		height: 0.65rem;
+	}
+
+	.product-skeleton__line--short {
+		width: 72%;
+	}
+
+	.product-skeleton__line--price {
+		width: 52%;
+		height: 1rem;
+		margin-top: var(--space-2);
+	}
+
+	.skeleton-pulse {
+		animation: skeleton-pulse 1.4s ease-in-out infinite alternate;
+	}
+
+	@keyframes skeleton-pulse {
+		from { opacity: 0.55; }
+		to { opacity: 1; }
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.skeleton-pulse {
+			animation: none;
+			opacity: 0.75;
+		}
+	}
+</style>

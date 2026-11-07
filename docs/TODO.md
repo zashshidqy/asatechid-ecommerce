@@ -1,6 +1,6 @@
 # TODO — ASATECHID Commerce
 
-Status per 2026-11-02.
+Status per 2026-11-07.
 
 ## Phase 0 — Discovery & scaffold  ✅ SELESAI
 
@@ -309,7 +309,7 @@ Catatan Phase 1:
 - **Jumlah produk/kategori masih data DEMO** (kategori `dvr`/`nvr`, 3 produk). Hitungan "0 produk" pada banner kategori berasal dari data taxonomy saat ini, bukan bug tampilan.
 - Field `compare_at_price` belum ada di schema `products`; harga coret belum bisa diisi.
 - Rating, jumlah terjual, stok numerik, minimum order, berat, promo, review, dan galeri belum tersedia dalam model data. Jangan tampilkan nilai karangan.
-- Cart, checkout, dan pembayaran tetap di luar lingkup (Phase 10 dan seterusnya).
+- Cart, checkout, dan pembayaran tetap di luar lingkup baseline storefront; full checkout berada pada Phase 11 dan tetap kondisional.
 - Jika data produk belum ada, section menampilkan empty state, bukan kartu palsu.
 - Astro meng-inline chunk script < 4 KB sehingga bertabrakan dengan CSP nonce; `vite.build.assetsInlineLimit` disetel 0 agar script diemisi sebagai modul eksternal (ADR-034).
 
@@ -350,8 +350,8 @@ Tujuan: selaraskan UI publik dengan `docs/DESIGN.md` versi 2026-11-02 tanpa meny
 
 - [x] Homepage data-driven disusun: intro katalog → merek → kategori pilihan → produk terbaru → rekomendasi → semua produk → artikel. Promo disembunyikan karena model/data belum ada.
 - [x] Flash Sale tidak dibuat karena timestamp dan stok nyata belum tersedia.
-- [ ] Lengkapi layout listing dengan filter desktop, drawer mobile, active chips, reset, dan page-size. Pagination cursor + empty state sudah ada.
-- [ ] Filter kategori/merek memperbarui URL dan reset halaman; kombinasi filter yang tidak layak tidak membentuk banyak URL indexable.
+- [x] Lengkapi layout listing dengan sidebar filter kategori desktop, disclosure filter mobile, active chip, reset, toolbar hasil, dan pagination cursor. Drawer modal/focus trap serta page-size tidak ditambah karena navigasi kategori sudah server-rendered tanpa JavaScript.
+- [x] Filter kategori memakai route canonical `/products/category/{slug}` dan reset ke `/products`; filter merek/harga ditunda sampai query relasi dan data harga produksi tersedia.
 - [x] Search global tetap memakai LiveSearch EmDash dengan loading/no-results; route hasil pencarian penuh masih open item.
 - [ ] Pastikan filter mendatang mengembalikan fokus ke heading hasil; pagination sekarang memakai tautan keyboard-native.
 
@@ -393,7 +393,147 @@ Tujuan: selaraskan UI publik dengan `docs/DESIGN.md` versi 2026-11-02 tanpa meny
 - [ ] Audit metadata/canonical/sitemap/robots/JSON-LD setelah perubahan route.
 - [ ] Perbarui `docs/TODO.md`, `docs/CHANGELOG.md`, `docs/DECISIONS.md`, dan `docs/12-OPEN-DECISIONS.md` untuk keputusan nyata.
 
-## Phase 10 — Full checkout (conditional)  ⬜
+## Phase 10 — Implementasi `docs/DESIGN.md` v1.0  ⬜
+
+Tujuan: menerapkan spesifikasi visual ASATECHID pada `docs/DESIGN.md` v1.0 secara bertahap, tanpa menyalin aset/data Vins Teknik dan tanpa membuat fitur commerce palsu. Phase ini menyempurnakan baseline Phase 9; route canonical Inggris dan inquiry-first MVP tetap dipertahankan.
+
+### Urutan pengerjaan
+
+1. Kerjakan 10.0–10.4 sebagai baseline P0.
+2. Selesaikan verifikasi 10.8 sebelum memulai fitur P1.
+3. Kerjakan 10.5–10.6 hanya setelah model dan data terkait tersedia.
+4. Jangan mulai checkout sampai seluruh keputusan pada 10.7 terpenuhi.
+
+### 10.0 — Audit baseline dan persiapan
+
+- [x] Bandingkan `src/styles/tokens.css` dengan token provisional pada `docs/DESIGN.md`; implementasi sudah memakai padanan semantik lama (`accent/bg/ink`) dan sengaja belum di-rename agar perubahan komponen tetap kecil.
+- [x] Audit komponen publik aktual terhadap daftar P0 pada DESIGN §13: seluruh komponen inti tersedia; gap utama skeleton, image-error state, filter/drawer, hasil pencarian penuh, dan galeri multi-gambar.
+- [x] Audit aksi shell yang terlihat; placeholder Kontak & layanan tanpa data resmi dihapus dari footer. Cart/wishlist/login tidak dirender.
+- [ ] Simpan screenshot baseline beranda, katalog, kategori, detail produk, dan artikel pada 390/768/1280px.
+- [x] Pastikan perubahan pengguna yang sudah ada tidak ditimpa selama realignment; perubahan dibatasi pada file slice ini dan dokumentasi.
+
+**Acceptance:** gap implementation terdokumentasi; tidak ada perubahan visual besar sebelum baseline dan scope slice pertama jelas.
+
+### 10.1 — Design tokens dan primitif P0
+
+- [x] Selaraskan warna semantik: brand, page, surface, text, border, success, warning, danger, info, dan focus; token `--color-info` ditambahkan. Surface, radius, shadow, dan rhythm kemudian dilunakkan agar UI tidak terasa kaku.
+- [x] Selaraskan typography scale untuk display, H1–H3, body, metadata, product title, dan price pada baseline katalog yang sudah ada.
+- [x] Selaraskan spacing 4/8/12/16/24/32/48/64, container 1280px, gutter 16/24px, radius 6/10/16px, serta shadow ringan pada baseline yang sudah ada.
+- [x] Pastikan komponen slice ini tidak menambah warna mentah di luar token.
+- [x] Audit `Button`, `Badge`, `Card`, `Breadcrumbs`, field, link, icon button, dan `EmptyState`; state dasar sudah tersedia, audit browser rinci tetap di 10.8.
+- [x] Tambah `ProductCardSkeleton` dengan rasio 1:1, grid responsif, dan reduced motion.
+- [x] Perbarui unit test kontras dengan pasangan `info`/surface; seluruh pasangan lulus WCAG AA ≥4.5:1.
+
+**Acceptance:** token menjadi sumber tunggal visual; primitif konsisten; test kontras lulus; tidak ada regresi focus ring atau target sentuh 44px.
+
+### 10.2 — App shell katalog P0
+
+- [x] Selaraskan header desktop: logo, search dominan, katalog, dan menu CMS yang hanya menunjuk route tersedia.
+- [x] Selaraskan header mobile: logo + trigger menu pada baris pertama, search tetap terlihat pada baris kedua.
+- [x] Menu memakai `<details>` keyboard-native, ditutup dengan Escape, dan fokus kembali ke trigger.
+- [x] LiveSearch memiliki state loading dan tanpa hasil bawaan; audit browser error/hasil tetap di 10.8.
+- [x] Input search masih diberi label lewat progressive enhancement karena komponen EmDash 1.3 tidak menyediakan prop label server-side; limitasi terdokumentasi di Phase 7.
+- [x] Footer memakai Identitas, Katalog, dan Perusahaan; kelompok Kontak & layanan disembunyikan sampai data resmi tersedia.
+- [x] Skip link, landmark semantik, CSP, dan reduced motion dipertahankan; no-overflow menunggu audit browser 10.8.
+
+**Acceptance:** shell berfungsi tanpa cart/wishlist/login palsu; seluruh navigasi keyboard-native; search tetap mudah ditemukan pada mobile dan desktop.
+
+### 10.3 — Homepage product-first P0
+
+- [ ] Buat intro katalog ringkas: satu H1, paragraf singkat, dan CTA `/products`; jangan memakai hero promosi besar.
+- [ ] Render merek hanya bila collection berisi data; tile non-tautan sampai route merek disetujui.
+- [ ] Selaraskan grid kategori 2 kolom mobile, 3–4 tablet, 5–6 desktop; nama maksimal dua baris.
+- [ ] Render produk terbaru dari data publish nyata.
+- [ ] Render rekomendasi hanya dari kurasi `featured`; sembunyikan bila kosong.
+- [ ] Render sampel semua produk dengan CTA “Lihat semua produk”, bukan seluruh katalog besar.
+- [ ] Pertahankan artikel edukasi setelah section katalog.
+- [ ] Pastikan section promo/flash sale tidak dirender sebelum model, periode, dan data nyata tersedia.
+- [ ] Pastikan entry tidak terduplikasi antar-section bila kandidat terbatas.
+
+**Acceptance:** homepage mengikuti urutan DESIGN §8, tetap informatif saat data parsial/kosong, dan tidak memuat banner/promo DEMO.
+
+### 10.4 — Product card, grid, dan state P0
+
+- [x] `ProductCard` memakai gambar 1:1, `object-fit: contain`, kategori opsional, nama dua baris, harga/status, dan metadata kondisional; merek menunggu hidrasi relasi listing.
+- [x] Harga pembanding/diskon tidak dirender karena field belum tersedia; aturan valid tetap wajib saat schema ditambah.
+- [x] Rating, review, jumlah terjual, stok numerik, dan badge promo tidak dirender tanpa field/sumber nyata.
+- [x] Tambahkan loading skeleton tanpa layout shift melalui `ProductCardSkeleton.astro`.
+- [x] Tambahkan fallback visual di belakang media; bila gambar gagal, fallback terlihat tanpa handler inline atau loop error.
+- [x] State tanpa harga, pre-order, tersedia, dan tidak tersedia sudah ditangani; ketersediaan kosong sengaja tidak diklaim pada kartu.
+- [x] Media dan judul memakai link terpisah tanpa nested interactive control.
+- [x] Grid 2/3/4/5 kolom tersedia pada mobile/tablet/desktop/wide.
+- [ ] Uji browser untuk judul panjang, kategori panjang, gambar portrait/landscape, URL gambar rusak, dan data kosong.
+
+**Acceptance:** semua kartu stabil tingginya, tidak mengarang data, dapat dipakai keyboard, dan tidak menimbulkan CLS berarti.
+
+### 10.5 — Catalog listing dan discovery P1
+
+- [x] Buat reusable `CatalogLayout`, toolbar hasil, active filter chips, reset, dan empty state.
+- [x] Buat filter kategori desktop dalam sidebar sticky.
+- [x] Buat filter mobile sebagai disclosure keyboard-native tanpa JavaScript; drawer modal/focus trap ditunda karena pola link kategori tidak memerlukannya.
+- [ ] Tambah filter merek hanya setelah query relasi EmDash dan strategi URL diverifikasi.
+- [ ] Tambah rentang harga hanya setelah data harga produksi tersedia; validasi min/max di server.
+- [x] Filter kategori memperbarui route canonical dan reset pagination ke halaman pertama.
+- [ ] Pastikan kombinasi filter biasa `noindex`/canonical sesuai strategi SEO; jangan membentuk landing page massal.
+- [ ] Setelah perubahan filter dinamis, fokus kembali ke heading hasil dan umumkan jumlah lewat `aria-live="polite"`.
+- [ ] Evaluasi page-size; jangan tambahkan bila pagination cursor EmDash tidak mendukungnya secara benar.
+- [ ] Sorting hanya ditambahkan bila kontrak backend tersedia; opsi wajib menghasilkan urutan deterministik.
+- [ ] Buat directory kategori jika taxonomy dapat dienumerasi stabil dan metadata route jelas.
+- [ ] Buat halaman hasil pencarian penuh yang crawl-safe; query tidak indexable secara default.
+
+**Acceptance:** filter berfungsi server-side/progressive enhancement, URL dapat dibagikan, pagination tetap keyboard-native, dan SEO filter tidak menghasilkan duplikasi massal.
+
+### 10.6 — Product detail P1
+
+- [x] Selaraskan layout desktop 45/55 dan urutan mobile sesuai DESIGN §11.
+- [x] Pertahankan breadcrumb, satu H1, ringkasan, harga/ketersediaan jujur, CTA inquiry, spesifikasi, deskripsi, dan produk terkait.
+- [x] Field spesifikasi kosong tidak dirender; data CMS disanitasi dan mudah dipindai.
+- [ ] Jika hanya satu gambar, jangan render thumbnail/counter/navigation palsu.
+- [ ] Setelah model galeri tersedia, buat thumbnail, counter, keyboard navigation, swipe progresif, serta active state.
+- [ ] Tetapkan dimensi/aspect ratio semua media untuk mencegah CLS.
+- [ ] Audit CTA WhatsApp/email: kanal invalid tersembunyi, judul + URL produk terisi, tidak ada sukses transaksi palsu.
+- [ ] Tambah native share + fallback copy URL hanya bila keduanya berfungsi dan memberi feedback aksesibel.
+- [ ] Product/Offer JSON-LD hanya ditambahkan setelah price, currency, availability, dan field wajib valid.
+- [ ] Jangan render quantity, cart, atau buy-now sebelum backend transaksi tersedia.
+
+**Acceptance:** detail produk lengkap untuk inquiry MVP, satu gambar tidak punya kontrol palsu, dan structured data mencerminkan data aktual.
+
+### 10.7 — Fitur kondisional dan data produksi
+
+- [ ] Brand guideline resmi diterima; ganti token/logo/font dan audit ulang kontras.
+- [ ] Produk, SKU, harga, stok, kategori, merek, dan foto resmi diimpor melalui alur CMS yang disetujui.
+- [ ] Model promo disetujui sebelum membuat promo homepage/detail.
+- [ ] Rating/review/jumlah terjual memiliki sumber, definisi, moderation, dan schema sebelum ditampilkan.
+- [ ] Halaman merek publik diputuskan sebelum `BrandTile` menjadi tautan.
+- [ ] Kontak, alamat, sosial, pembayaran, kurir, serta kebijakan hanya ditampilkan setelah data resmi tersedia.
+- [ ] Tracking hanya dibuat setelah provider/API nyata tersedia.
+- [ ] Wishlist hanya dibuat setelah ada akun/session dan penyimpanan nyata.
+- [ ] App download/QR hanya dibuat bila aplikasi resmi tersedia.
+- [ ] Chat hanya dibuat setelah provider dan kanal resmi dipilih.
+- [ ] Cart/checkout baru dimulai setelah payment, shipping, tax, return, order state, webhook, dan persistence disetujui.
+
+**Acceptance:** tidak ada fitur kondisional aktif dengan mock yang tampak produksi.
+
+### 10.8 — Quality gate per vertical slice
+
+- [x] Jalankan `npm run typecheck` — lulus setelah slice katalog (2026-11-07).
+- [x] Jalankan `npm test` — 35/35 lulus (2026-11-07).
+- [x] Jalankan `npm run build` — sukses; warning chunk admin >500 kB tetap ada (2026-11-07).
+- [ ] Jalankan `npm run audit:site -- --base <origin> --production` pada server build.
+- [ ] Jalankan `npm run check:launch:staging`; catat blocker yang memang masih terbuka.
+- [ ] Uji viewport 375, 390, 768, 1024, 1280, dan 1440px.
+- [ ] Verifikasi `document.documentElement.scrollWidth === window.innerWidth` pada route inti.
+- [ ] Uji keyboard untuk skip link, header, search, menu, filter/drawer, pagination, galeri, dan CTA.
+- [ ] Uji axe/screen reader bila tooling tersedia; dokumentasikan yang belum diuji.
+- [ ] Audit gambar: width/height atau aspect ratio, alt, `srcset`, lazy loading, dan LCP.
+- [ ] Audit metadata, canonical, robots, sitemap, JSON-LD, 404, draft, dan preview.
+- [ ] Perbarui `docs/TODO.md`, `docs/CHANGELOG.md`, `docs/DECISIONS.md`, serta `docs/12-OPEN-DECISIONS.md` pada setiap keputusan nyata.
+
+**Acceptance:** command wajib lulus atau kegagalan terdokumentasi; screenshot dan audit keyboard tersedia; tidak ada data DEMO baru yang tampak produksi.
+
+## Phase 11 — Full checkout (conditional)  ⬜
+
+Mulai hanya setelah seluruh dependency transaksi pada Phase 10.7 disetujui. Cakupan mengikuti roadmap checkout: persistence/migration, cart, checkout, order management, payment adapter, verified webhook, shipping, notification, idempotency, race-condition, failure, refund, dan sandbox test.
 
 ## Blocker data yang belum tersedia (jangan dikarang)
 

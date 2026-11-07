@@ -45,6 +45,7 @@ const TEXT_PAIRS: Array<[foreground: string, background: string]> = [
 	["danger", "surface"],
 	["success", "surface"],
 	["warning", "surface"],
+	["info", "surface"],
 ];
 
 test("all text color pairs meet WCAG AA contrast (4.5:1)", () => {

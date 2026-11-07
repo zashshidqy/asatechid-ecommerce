@@ -519,3 +519,22 @@ Konten publik Bahasa Indonesia (`<html lang="id">`, format tanggal `id-ID`). Mul
 - Product card hanya memakai field yang tersedia di schema saat ini. Harga pembanding, rating, review count, jumlah terjual, dan stok numerik ditunda sampai model serta sumber datanya disetujui.
 - Komponen/script homepage lama (`HeroCarousel`, `PromoBanner`, `QuickCategoryCard`, `FilterTabs`, `hero-carousel.ts`) dihapus setelah pencarian referensi memastikan tidak dipakai lagi.
 
+## ADR-036 — Filter katalog memakai route kategori dan disclosure mobile
+
+**Status:** diterima (Phase 10, 2026-11-07)
+
+**Konteks:** Referensi Vins Teknik memakai katalog padat dengan filter desktop/mobile. Proyek sudah memiliki route kategori canonical dan pagination cursor, tetapi belum punya shell filter. Filter merek, harga, sorting, dan page-size belum punya kontrak query/data yang aman.
+
+**Keputusan:**
+- Tambahkan `CatalogLayout`, sidebar kategori desktop, toolbar hasil, active chip, dan reset.
+- Filter kategori memakai link route canonical `/products/category/{slug}`, bukan query baru atau JavaScript client-side.
+- Mobile memakai `<details>` keyboard-native. Drawer modal dengan focus trap tidak dibuat karena filter saat ini hanya kumpulan link navigasi; kompleksitas drawer ditunda sampai filter multi-field membutuhkan state sementara.
+- Listing menampilkan maksimal 20 produk per cursor page agar lebih dekat ke pola katalog padat tanpa mengubah backend pagination.
+- Sorting hanya dilabeli `Terbaru` sesuai query aktual; tidak ada kontrol sorting palsu.
+
+**Konsekuensi:**
+- Filter dapat dipakai tanpa JavaScript, URL dapat dibagikan, dan perubahan kategori otomatis mereset cursor.
+- Halaman kategori tetap canonical/indexable sesuai keputusan route lama; tidak muncul kombinasi query filter massal.
+- Filter merek, harga, drawer modal, page-size, dan sorting menunggu dukungan data/query nyata.
+- Pola pengalaman diadaptasi, tetapi brand, aset, data, dan source code Vins Teknik tidak disalin.
+

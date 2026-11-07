@@ -37,12 +37,14 @@ const Tag = href ? "a" : "div";
 		color: var(--color-ink);
 		text-align: center;
 		text-decoration: none;
+		transition: border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
 	}
 
 	a.brand-tile:hover {
 		border-color: var(--color-accent-light);
-		box-shadow: var(--shadow-card);
+		box-shadow: var(--shadow-card-hover);
 		color: var(--color-ink);
+		transform: translateY(-2px);
 	}
 
 	.brand-tile__logo {

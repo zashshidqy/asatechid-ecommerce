@@ -62,16 +62,22 @@ if (Astro.cache?.enabled) {
 			showCounts
 		/>
 
-		{
-			posts.length === 0 ? (
-				<EmptyState
-					title="Belum ada artikel"
-					description="Artikel yang dipublikasikan melalui CMS akan tampil di halaman ini."
-				/>
-			) : (
-				<PostGrid posts={posts} />
-			)
-		}
+		<section class="article-catalog" aria-labelledby="article-results-title">
+			<div class="article-catalog__head">
+				<h2 id="article-results-title">Artikel terbaru</h2>
+				<span>{posts.length} artikel pada halaman ini</span>
+			</div>
+			{
+				posts.length === 0 ? (
+					<EmptyState
+						title="Belum ada artikel"
+						description="Artikel yang dipublikasikan melalui CMS akan tampil di halaman ini."
+					/>
+				) : (
+					<PostGrid posts={posts} />
+				)
+			}
+		</section>
 
 		{(cursor || nextCursor) && (
 			<nav class="pagination" aria-label="Navigasi halaman artikel">
@@ -94,6 +100,34 @@ if (Astro.cache?.enabled) {
 </Base>
 
 <style>
+	.article-catalog {
+		padding: var(--space-5);
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-lg);
+	}
+
+	.article-catalog__head {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: baseline;
+		justify-content: space-between;
+		gap: var(--space-3);
+		margin-bottom: var(--space-6);
+		padding-bottom: var(--space-4);
+		border-bottom: 1px solid var(--color-border);
+	}
+
+	.article-catalog__head h2 {
+		margin: 0;
+		font-size: var(--text-xl);
+	}
+
+	.article-catalog__head span {
+		color: var(--color-muted);
+		font-size: var(--text-sm);
+	}
+
 	.pagination {
 		display: flex;
 		flex-wrap: wrap;

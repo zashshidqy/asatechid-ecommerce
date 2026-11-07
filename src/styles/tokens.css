@@ -15,17 +15,20 @@
 	--color-accent: #a63d20;
 	--color-accent-hover: #842f19;
 	--color-accent-contrast: #ffffff;
-	--color-accent-soft: #fbe9e3;
+	--color-accent-soft: #fff0e8;
 	--color-accent-light: #d97757;
+	--color-header: #14324a;
+	--color-header-hover: #1d425d;
+	--color-header-text: #ffffff;
 
 	/* Palette — accent sekunder. */
 	--color-highlight: #f3b24f;
 	--color-highlight-soft: #fff3dc;
 
 	/* Palette — netral katalog. */
-	--color-bg: #f8fafc;
+	--color-bg: #f7f8f6;
 	--color-surface: #ffffff;
-	--color-surface-muted: #f1f5f9;
+	--color-surface-muted: #f2f4f2;
 	--color-ink: #0f172a;
 	--color-ink-soft: #475569;
 	--color-muted: #586579;
@@ -36,6 +39,7 @@
 	--color-danger: #b42318;
 	--color-success: #15703b;
 	--color-warning: #9a5800;
+	--color-info: #175cd3;
 	--color-focus: #1d4ed8;
 
 	/* Legacy aliases: tidak dipakai sebagai gradient baru. */
@@ -76,15 +80,15 @@
 	--header-height: 4.5rem;
 
 	/* Shape. */
-	--radius-sm: 6px;
-	--radius-md: 10px;
-	--radius-lg: 16px;
-	--radius-xl: 16px;
+	--radius-sm: 8px;
+	--radius-md: 12px;
+	--radius-lg: 18px;
+	--radius-xl: 22px;
 	--radius-pill: 9999px;
 
 	/* Elevation. */
-	--shadow-sm: 0 1px 2px rgb(15 23 42 / 0.06);
-	--shadow-md: 0 10px 30px rgb(15 23 42 / 0.1);
-	--shadow-card: 0 2px 12px rgb(15 23 42 / 0.05);
-	--shadow-card-hover: 0 8px 24px rgb(15 23 42 / 0.1);
+	--shadow-sm: 0 1px 3px rgb(15 23 42 / 0.06);
+	--shadow-md: 0 16px 38px rgb(15 23 42 / 0.11);
+	--shadow-card: 0 4px 16px rgb(15 23 42 / 0.055);
+	--shadow-card-hover: 0 12px 28px rgb(15 23 42 / 0.11);
 }

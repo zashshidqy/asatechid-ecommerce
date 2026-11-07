@@ -1,0 +1,132 @@
+---
+import CatalogFilterList from "./CatalogFilterList.astro";
+
+interface CategoryOption {
+	label: string;
+	slug: string;
+	count?: number | null;
+}
+
+interface Props {
+	categories: CategoryOption[];
+	activeCategory?: string;
+}
+
+const { categories, activeCategory } = Astro.props;
+---
+
+<div class="catalog-filter-mobile">
+	<details>
+		<summary>
+			<svg aria-hidden="true" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+				<path d="M4 6h16M7 12h10M10 18h4" />
+			</svg>
+			Filter produk
+			{activeCategory && <span class="catalog-filter__count">1</span>}
+		</summary>
+		<div class="catalog-filter-mobile__panel">
+			<CatalogFilterList categories={categories} activeCategory={activeCategory} />
+		</div>
+	</details>
+</div>
+
+<aside class="catalog-filter-desktop" aria-labelledby="catalog-filter-title">
+	<div class="catalog-filter__head">
+		<h2 id="catalog-filter-title">Filter</h2>
+		{activeCategory && <a href="/products">Reset</a>}
+	</div>
+	<CatalogFilterList categories={categories} activeCategory={activeCategory} />
+</aside>
+
+<style>
+	.catalog-filter-desktop {
+		display: none;
+		padding: var(--space-5);
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-md);
+	}
+
+	.catalog-filter__head {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: var(--space-3);
+		padding-bottom: var(--space-4);
+		border-bottom: 1px solid var(--color-border);
+	}
+
+	.catalog-filter__head h2 {
+		margin: 0;
+		font-size: var(--text-lg);
+	}
+
+	.catalog-filter__head a {
+		font-size: var(--text-sm);
+		font-weight: 650;
+	}
+
+	.catalog-filter-mobile {
+		margin-bottom: var(--space-4);
+	}
+
+	.catalog-filter-mobile details {
+		background: var(--color-surface);
+		border: 1px solid var(--color-border-strong);
+		border-radius: var(--radius-md);
+	}
+
+	.catalog-filter-mobile summary {
+		display: flex;
+		min-height: 2.75rem;
+		align-items: center;
+		gap: var(--space-2);
+		padding: var(--space-2) var(--space-4);
+		font-size: var(--text-sm);
+		font-weight: 700;
+		cursor: pointer;
+		list-style: none;
+	}
+
+	.catalog-filter-mobile summary::-webkit-details-marker {
+		display: none;
+	}
+
+	.catalog-filter-mobile summary::after {
+		margin-left: auto;
+		content: "+";
+		font-size: var(--text-lg);
+	}
+
+	.catalog-filter-mobile details[open] summary::after {
+		content: "−";
+	}
+
+	.catalog-filter__count {
+		display: grid;
+		place-items: center;
+		width: 1.25rem;
+		height: 1.25rem;
+		background: var(--color-accent);
+		border-radius: var(--radius-pill);
+		color: var(--color-accent-contrast);
+		font-size: var(--text-xs);
+	}
+
+	.catalog-filter-mobile__panel {
+		padding: 0 var(--space-4) var(--space-4);
+		border-top: 1px solid var(--color-border);
+	}
+
+	@media (min-width: 64rem) {
+		.catalog-filter-mobile {
+			display: none;
+		}
+
+		.catalog-filter-desktop {
+			display: block;
+			position: sticky;
+			top: var(--space-4);
+		}
+	}
+</style>

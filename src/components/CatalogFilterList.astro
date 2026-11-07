@@ -1,0 +1,94 @@
+---
+interface CategoryOption {
+	label: string;
+	slug: string;
+	count?: number | null;
+}
+
+interface Props {
+	categories: CategoryOption[];
+	activeCategory?: string;
+}
+
+const { categories, activeCategory } = Astro.props;
+---
+
+<fieldset class="catalog-filter__group">
+	<legend>Kategori</legend>
+	<ul>
+		<li>
+			<a class:list={{ "is-active": !activeCategory }} href="/products">
+				<span>Semua kategori</span>
+			</a>
+		</li>
+		{
+			categories.map((category) => (
+				<li>
+					<a
+						class:list={{ "is-active": activeCategory === category.slug }}
+						href={`/products/category/${category.slug}`}
+						aria-current={activeCategory === category.slug ? "page" : undefined}
+					>
+						<span>{category.label}</span>
+						{typeof category.count === "number" && <small>{category.count}</small>}
+					</a>
+				</li>
+			))
+		}
+	</ul>
+</fieldset>
+
+<style>
+	.catalog-filter__group {
+		min-width: 0;
+		margin: var(--space-4) 0 0;
+		padding: 0;
+		border: 0;
+	}
+
+	.catalog-filter__group legend {
+		margin-bottom: var(--space-3);
+		font-size: var(--text-sm);
+		font-weight: 750;
+	}
+
+	.catalog-filter__group ul {
+		display: flex;
+		max-height: 22rem;
+		flex-direction: column;
+		gap: var(--space-1);
+		overflow-y: auto;
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+
+	.catalog-filter__group a {
+		display: flex;
+		min-height: 2.5rem;
+		align-items: center;
+		justify-content: space-between;
+		gap: var(--space-2);
+		padding: var(--space-2) var(--space-3);
+		border-radius: var(--radius-sm);
+		color: var(--color-ink-soft);
+		font-size: var(--text-sm);
+		text-decoration: none;
+	}
+
+	.catalog-filter__group a:hover {
+		background: var(--color-surface-muted);
+		color: var(--color-ink);
+	}
+
+	.catalog-filter__group a.is-active {
+		background: var(--color-accent-soft);
+		color: var(--color-accent-hover);
+		font-weight: 700;
+	}
+
+	.catalog-filter__group small {
+		color: var(--color-muted);
+		font-variant-numeric: tabular-nums;
+	}
+</style>
