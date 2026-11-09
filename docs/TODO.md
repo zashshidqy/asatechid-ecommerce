@@ -324,7 +324,7 @@ Tujuan: selaraskan UI publik dengan `docs/DESIGN.md` versi 2026-11-02 tanpa meny
 - [x] Strategi URL: pertahankan route Inggris; tidak membuat alias yang menduplikasi halaman.
 - [x] Hero carousel dan dua banner DEMO lama dihapus dari homepage.
 - [x] Taxonomy kategori dipertahankan untuk P0; collection baru ditunda sampai kategori membutuhkan body/gambar/SEO mandiri.
-- [x] Collection merek dipakai untuk tile non-tautan; halaman/filter merek tetap open item karena relasi kartu dan route publik belum tersedia.
+- [x] Collection merek dipakai untuk tile logo; filter merek tersedia lewat route `/products/brand/{id}` dan sisi balik relasi produk.
 - [x] Keputusan realignment dicatat di ADR-035.
 
 ### 9.1 P0 — Design system dan shell katalog
@@ -338,7 +338,7 @@ Tujuan: selaraskan UI publik dengan `docs/DESIGN.md` versi 2026-11-02 tanpa meny
 
 ### 9.2 P0 — Komponen katalog reusable
 
-- [x] Tambah `BrandTile` memakai data CMS/logo; homepage menyembunyikan section bila collection kosong. Tile belum menjadi tautan karena halaman merek belum diputuskan.
+- [x] Tambah `BrandTile` memakai data CMS/logo; homepage menyembunyikan section bila collection kosong dan tile menaut ke katalog merek.
 - [x] Tambah `CategoryTile` reusable dengan tinggi konsisten, count nyata, image kategori dari collection EmDash `product_category_profiles`, dan ikon SVG kontekstual sebagai fallback.
 - [x] `SectionHead` reusable tetap dipakai untuk heading + aksi.
 - [x] Selaraskan `ProductCard`: gambar 1:1 `object-contain`, nama 2 baris, harga tabular, fallback gambar, dan availability state. Harga pembanding, rating, jumlah terjual, dan stok numerik tidak dirender karena belum ada di schema.
@@ -358,7 +358,7 @@ Tujuan: selaraskan UI publik dengan `docs/DESIGN.md` versi 2026-11-02 tanpa meny
 ### 9.4 P0 — Halaman kategori, merek, pencarian, produk
 
 - [ ] Buat directory kategori dan listing kategori sesuai strategi URL/canonical terpilih.
-- [ ] Buat directory/landing merek hanya setelah collection `brands` routable dan data merek resmi tersedia.
+- [x] Buat landing katalog per merek di `/products/brand/{id}`; collection tetap non-routable dan produk dibaca melalui sisi balik relasi `products_brand`.
 - [ ] Buat halaman hasil pencarian katalog crawl-safe; query tidak otomatis menjadi landing page indexable.
 - [x] Detail produk dasar tetap responsif: gambar `object-contain`, ringkasan, metadata/specs, deskripsi, availability, CTA inquiry, dan produk terkait. Galeri multi-gambar belum tersedia.
 - [ ] Galeri memakai data media nyata, counter, thumbnail, keyboard, dan swipe progresif; jika hanya satu gambar, jangan tampilkan kontrol palsu.
@@ -441,7 +441,8 @@ Tujuan: menerapkan spesifikasi visual ASATECHID pada `docs/DESIGN.md` v1.0 secar
 ### 10.3 — Homepage product-first P0
 
 - [ ] Buat intro katalog ringkas: satu H1, paragraf singkat, dan CTA `/products`; jangan memakai hero promosi besar.
-- [ ] Render merek hanya bila collection berisi data; tile non-tautan sampai route merek disetujui.
+- [x] Render merek hanya bila collection berisi data; tile menjadi tautan ke katalog produk terfilter berdasarkan relasi merek.
+- [x] Tile merek hanya menampilkan logo; nama tetap tersedia sebagai label aksesibel dan inisial dipakai bila logo belum tersedia.
 - [ ] Selaraskan grid kategori 2 kolom mobile, 3–4 tablet, 5–6 desktop; nama maksimal dua baris.
 - [ ] Render produk terbaru dari data publish nyata.
 - [ ] Render rekomendasi hanya dari kurasi `featured`; sembunyikan bila kosong.
@@ -504,7 +505,7 @@ Tujuan: menerapkan spesifikasi visual ASATECHID pada `docs/DESIGN.md` v1.0 secar
 - [ ] Produk, SKU, harga, stok, kategori, merek, dan foto resmi diimpor melalui alur CMS yang disetujui.
 - [ ] Model promo disetujui sebelum membuat promo homepage/detail.
 - [ ] Rating/review/jumlah terjual memiliki sumber, definisi, moderation, dan schema sebelum ditampilkan.
-- [ ] Halaman merek publik diputuskan sebelum `BrandTile` menjadi tautan.
+- [x] `BrandTile` menjadi tautan ke katalog terfilter merek setelah route `/products/brand/{id}` dan relasi balik disetujui.
 - [ ] Kontak, alamat, sosial, pembayaran, kurir, serta kebijakan hanya ditampilkan setelah data resmi tersedia.
 - [ ] Tracking hanya dibuat setelah provider/API nyata tersedia.
 - [ ] Wishlist hanya dibuat setelah ada akun/session dan penyimpanan nyata.

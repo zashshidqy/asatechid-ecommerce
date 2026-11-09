@@ -2,6 +2,23 @@
 
 Format ringkas per fase. Tanggal memakai ISO (YYYY-MM-DD).
 
+## 2026-11-09 — Tile merek hanya menampilkan logo
+
+### Added
+- Route `/products/brand/{id}` menampilkan produk terbit yang terhubung ke merek, lengkap dengan empty state dan pagination cursor.
+- Field referensi balik `brands.products` memakai relasi `products_brand` yang sudah ada, sehingga filter tidak memerlukan SQL langsung.
+
+### Changed
+- `src/components/BrandTile.astro` menghapus nama merek dari tampilan visual dan memperbesar area logo; nama tetap tersedia sebagai teks khusus pembaca layar.
+- Tile merek pada beranda kini menjadi tautan ke katalog merek terkait; merek tanpa logo tetap memakai inisial sebagai fallback visual.
+- `CatalogLayout` dan `CatalogFilters` mendukung filter aktif non-kategori.
+
+### Verified
+- `npx emdash seed seed/seed.json --validate` lulus.
+- `npm run typecheck` lulus.
+- `npm test` → 35/35 lulus.
+- `npm run build` sukses; warning chunk admin >500 kB tetap ada.
+
 ## 2026-11-07 — Ikon kategori dapat dikelola lewat EmDash
 
 ### Added

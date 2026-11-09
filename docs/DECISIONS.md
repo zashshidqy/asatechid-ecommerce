@@ -1,5 +1,19 @@
 # Technical Decisions (ADR ringkas)
 
+## ADR-037 — Katalog merek memakai sisi balik relasi produk
+
+**Status:** diterima (Phase 10, 2026-11-09)
+
+**Konteks:** Tile logo merek perlu membuka katalog produk merek tersebut. `getEmDashCollection().where` hanya memfilter kolom, taxonomy, dan byline; field referensi `products.brand` disimpan sebagai edge relasi dan tidak dapat difilter sebagai kolom biasa.
+
+**Keputusan:** Tambah field referensi balik `products` pada collection `brands`, terikat ke sisi `child` relasi `products_brand` yang sudah ada. Route `/products/brand/{id}` memuat merek dengan `getEmDashEntry()` dan produk terhubung dengan `getEmDashReferences()`. Collection `brands` tetap non-routable; route ini adalah landing katalog terfilter, bukan halaman profil merek CMS.
+
+**Konsekuensi:**
+- Tile merek dapat menjadi tautan tanpa query string massal atau SQL langsung.
+- URL memakai ID stabil karena collection merek non-routable belum memiliki slug publik yang dijamin unik.
+- Produk draft tetap tidak tampil karena resolver referensi publik hanya mengembalikan target terbit.
+- Jika halaman profil merek dan slug publik ditambahkan nanti, strategi URL serta redirect dari ID harus ditinjau ulang.
+
 ## ADR-036 — Metadata ikon kategori memakai collection pendamping
 
 **Status:** diterima (Phase 2)
@@ -529,7 +543,7 @@ Konten publik Bahasa Indonesia (`<html lang="id">`, format tanggal `id-ID`). Mul
 **Konsekuensi:**
 - Tidak ada migrasi URL atau redirect baru pada slice ini; risiko perubahan canonical minimum.
 - Warna baru tetap provisional sampai brand guideline ASATECHID tersedia.
-- Brand tile boleh tampil dari collection CMS yang sudah ada, tetapi belum menjadi tautan sampai halaman merek dan strategi URL disetujui.
+- Brand tile awalnya tampil tanpa tautan; ADR-037 kemudian menyetujui tautan ke katalog terfilter merek tanpa mengubah collection menjadi routable.
 - Product card hanya memakai field yang tersedia di schema saat ini. Harga pembanding, rating, review count, jumlah terjual, dan stok numerik ditunda sampai model serta sumber datanya disetujui.
 - Komponen/script homepage lama (`HeroCarousel`, `PromoBanner`, `QuickCategoryCard`, `FilterTabs`, `hero-carousel.ts`) dihapus setelah pencarian referensi memastikan tidak dipakai lagi.
 

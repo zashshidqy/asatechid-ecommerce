@@ -126,7 +126,11 @@ const { siteTitle, siteTagline } = resolveStarterSiteIdentity(
 					<ul class="brand-grid">
 						{brands.map((brand) => (
 							<li>
-								<BrandTile name={brand.data.name} logo={brand.data.logo} />
+								<BrandTile
+									name={brand.data.name}
+									logo={brand.data.logo}
+									href={`/products/brand/${encodeURIComponent(brand.id)}`}
+								/>
 							</li>
 						))}
 					</ul>

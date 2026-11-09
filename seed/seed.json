@@ -102,7 +102,7 @@
 			"slug": "brands",
 			"label": "Merek",
 			"labelSingular": "Merek",
-			"description": "Merek produk. Belum ada halaman publik pada fase ini.",
+			"description": "Merek produk yang ditampilkan sebagai filter katalog publik.",
 			"routable": false,
 			"supports": [
 				"drafts",
@@ -135,6 +135,17 @@
 					"slug": "website",
 					"label": "Situs web",
 					"type": "url"
+				},
+				{
+					"slug": "products",
+					"label": "Produk",
+					"type": "reference",
+					"validation": {
+						"relation": "products_brand",
+						"relationSide": "child",
+						"targetCollection": "products",
+						"multiple": true
+					}
 				}
 			]
 		},

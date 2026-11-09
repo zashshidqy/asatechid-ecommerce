@@ -10,9 +10,11 @@ interface CategoryOption {
 interface Props {
 	categories: CategoryOption[];
 	activeCategory?: string;
+	activeFilter?: boolean;
 }
 
-const { categories, activeCategory } = Astro.props;
+const { categories, activeCategory, activeFilter = false } = Astro.props;
+const hasActiveFilter = Boolean(activeCategory) || activeFilter;
 ---
 
 <div class="catalog-filter-mobile">
@@ -22,7 +24,7 @@ const { categories, activeCategory } = Astro.props;
 				<path d="M4 6h16M7 12h10M10 18h4" />
 			</svg>
 			Filter produk
-			{activeCategory && <span class="catalog-filter__count">1</span>}
+			{hasActiveFilter && <span class="catalog-filter__count">1</span>}
 		</summary>
 		<div class="catalog-filter-mobile__panel">
 			<CatalogFilterList categories={categories} activeCategory={activeCategory} />
@@ -33,7 +35,7 @@ const { categories, activeCategory } = Astro.props;
 <aside class="catalog-filter-desktop" aria-labelledby="catalog-filter-title">
 	<div class="catalog-filter__head">
 		<h2 id="catalog-filter-title">Filter</h2>
-		{activeCategory && <a href="/products">Reset</a>}
+		{hasActiveFilter && <a href="/products">Reset</a>}
 	</div>
 	<CatalogFilterList categories={categories} activeCategory={activeCategory} />
 </aside>

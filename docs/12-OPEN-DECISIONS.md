@@ -33,7 +33,7 @@ nilai untuk mengisi kolom yang kosong.
 | 23 | Model promo | Belum ada | Section promo disembunyikan; tidak ada banner DEMO | Promo homepage/detail |
 | 24 | Rating, review, jumlah terjual, stok numerik | Belum ada | Field tidak ditampilkan | Kartu/detail produk lengkap |
 | 25 | Galeri, berat, minimum order | Belum ada | Satu gambar utama + spesifikasi yang tersedia | Detail produk/fulfillment |
-| 26 | Halaman merek publik | Belum diputuskan | Merek tampil sebagai tile non-tautan | Directory/filter merek |
+| 26 | Halaman merek publik | Filter katalog per merek tersedia di `/products/brand/{id}`; profil/directory merek penuh belum diputuskan | Tile logo menaut ke katalog merek | Profil/directory merek penuh |
 | 27 | Provider pelacakan resi/chat/aplikasi | Belum ada | Fitur tidak dirender | Fitur P1/P2 Phase 9 |
 
 ## Keputusan yang sudah diambil
