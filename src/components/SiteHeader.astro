@@ -2,19 +2,16 @@
 import { getMenuWithCacheHint, getTaxonomyTermsWithCacheHint } from "emdash";
 import LiveSearch from "emdash/ui/search";
 import Logo from "./Logo.astro";
-import type { MediaReference } from "../utils/site-identity";
 
 interface Props {
 	siteTitle: string;
 	siteTagline?: string;
-	siteLogo?: MediaReference | null;
 	searchCollections?: string[];
 }
 
 const {
 	siteTitle,
 	siteTagline = "",
-	siteLogo = null,
 	searchCollections = ["products", "posts", "pages"],
 } = Astro.props;
 
@@ -48,7 +45,7 @@ function isActive(url: string): boolean {
 
 <header class="site-header">
 	<div class="container site-header__main">
-		<Logo title={siteTitle} logo={siteLogo} />
+		<Logo title={siteTitle} />
 
 		<div class="site-search site-search--desktop" role="search" aria-label="Pencarian situs">
 			<LiveSearch

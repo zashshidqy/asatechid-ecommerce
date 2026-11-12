@@ -434,6 +434,7 @@ Tujuan: menerapkan spesifikasi visual ASATECHID pada `docs/DESIGN.md` v1.0 secar
 - [x] LiveSearch memiliki state loading dan tanpa hasil bawaan; audit browser error/hasil tetap di 10.8.
 - [x] Input search masih diberi label lewat progressive enhancement karena komponen EmDash 1.3 tidak menyediakan prop label server-side; limitasi terdokumentasi di Phase 7.
 - [x] Footer memakai Identitas, Katalog, dan Perusahaan; kelompok Kontak & layanan disembunyikan sampai data resmi tersedia.
+- [x] Aset `public/LOGO ASATECH.png` dipakai sebagai logo responsif di header dan footer.
 - [x] Skip link, landmark semantik, CSP, dan reduced motion dipertahankan; no-overflow menunggu audit browser 10.8.
 
 **Acceptance:** shell berfungsi tanpa cart/wishlist/login palsu; seluruh navigasi keyboard-native; search tetap mudah ditemukan pada mobile dan desktop.
@@ -449,6 +450,7 @@ Tujuan: menerapkan spesifikasi visual ASATECHID pada `docs/DESIGN.md` v1.0 secar
 - [ ] Render sampel semua produk dengan CTA “Lihat semua produk”, bukan seluruh katalog besar.
 - [ ] Pertahankan artikel edukasi setelah section katalog.
 - [ ] Pastikan section promo/flash sale tidak dirender sebelum model, periode, dan data nyata tersedia.
+- [x] Tampilkan 6 paket pemasangan CCTV dari brosur pemilik; kamera satuan dan paket solar panel tidak dimasukkan. Harga/cakupan mengikuti brosur dan CTA tetap nonaktif sampai kanal kontak dikonfigurasi; migrasikan ke CMS sebelum produksi.
 - [ ] Pastikan entry tidak terduplikasi antar-section bila kandidat terbatas.
 
 **Acceptance:** homepage mengikuti urutan DESIGN §8, tetap informatif saat data parsial/kosong, dan tidak memuat banner/promo DEMO.

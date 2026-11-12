@@ -2,6 +2,33 @@
 
 Format ringkas per fase. Tanggal memakai ISO (YYYY-MM-DD).
 
+## 2026-11-12 — Paket pemasangan CCTV di beranda
+
+### Added
+- `src/components/CctvPackageCard.astro` untuk kartu paket responsif dengan harga, daftar perangkat, status jasa pasang, dan catatan konfirmasi.
+- Beranda menampilkan 6 paket CCTV dari brosur pemilik: Hikvision analog 2 MP, Hikvision ColorVu audio 5 MP, Dahua audio 5 MP, Uniview audio 2 MP, HiLook analog 2 MP, dan Hikvision IP 2 MP.
+
+### Safety
+- Kamera satuan dan paket CCTV solar panel pada brosur tidak dimasukkan sesuai instruksi pemilik.
+- Hanya informasi yang terbaca jelas ditranskripsikan; kode model yang kabur tidak ditebak.
+- CTA paket dinonaktifkan sampai kanal penawaran tersedia. Catatan jasa pasang mengikuti keterangan brosur.
+
+### Verified
+- `npm run typecheck` lulus.
+- `npm test` → 35/35 lulus.
+- `npm run build` sukses; warning chunk admin >500 kB tetap ada.
+
+## 2026-11-12 — Logo ASATECH pada shell publik
+
+### Changed
+- `src/components/Logo.astro` memakai aset `public/LOGO ASATECH.png` sebagai identitas visual di header dan footer, menggantikan wordmark placeholder.
+- Logo memiliki dimensi intrinsik, ukuran responsif, alt dari judul situs, dan tautan ke beranda.
+
+### Verified
+- `npm run typecheck` lulus.
+- `npm test` → 35/35 lulus.
+- `npm run build` sukses; warning chunk admin >500 kB tetap ada.
+
 ## 2026-11-09 — Tile merek hanya menampilkan logo
 
 ### Added

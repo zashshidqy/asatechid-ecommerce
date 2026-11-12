@@ -1,0 +1,124 @@
+---
+interface Props {
+	name: string;
+	description: string;
+	price: number;
+	items: string[];
+	installationIncluded?: boolean;
+}
+
+const {
+	name,
+	description,
+	price,
+	items,
+	installationIncluded = false,
+} = Astro.props;
+const formattedPrice = new Intl.NumberFormat("id-ID", {
+	style: "currency",
+	currency: "IDR",
+	maximumFractionDigits: 0,
+}).format(price);
+---
+
+<article class="package-card">
+	<div class="package-card__head">
+		<span class="badge badge--soft">Paket CCTV</span>
+		{installationIncluded && <span class="package-card__flag">Termasuk jasa pasang</span>}
+	</div>
+	<h3>{name}</h3>
+	<p class="package-card__description">{description}</p>
+	<p class="package-card__price">{formattedPrice}</p>
+	<ul>
+		{items.map((item) => <li>{item}</li>)}
+	</ul>
+	<button class="btn btn--secondary package-card__action" type="button" disabled>
+		Hubungi kami belum tersedia
+	</button>
+	<p class="package-card__note">
+		{
+			installationIncluded
+				? "Harga pada brosur menyatakan termasuk jasa pasang. Konfirmasi kondisi dan cakupan lokasi tetap diperlukan."
+				: "Harga belum termasuk jasa pasang sesuai kondisi lapangan. Konfirmasi penawaran sebelum pemesanan."
+		}
+	</p>
+</article>
+
+<style>
+	.package-card {
+		display: flex;
+		flex-direction: column;
+		height: 100%;
+		padding: var(--space-6);
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-lg);
+		box-shadow: var(--shadow-sm);
+	}
+
+	.package-card__head {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: var(--space-3);
+		min-height: 1.75rem;
+	}
+
+	.package-card__flag {
+		color: var(--color-accent-hover);
+		font-size: var(--text-xs);
+		font-weight: 700;
+	}
+
+	h3 {
+		margin: var(--space-4) 0 var(--space-2);
+		font-size: var(--text-xl);
+	}
+
+	.package-card__description {
+		margin: 0;
+		color: var(--color-ink-soft);
+	}
+
+	.package-card__price {
+		margin: var(--space-5) 0 0;
+		color: var(--color-ink);
+		font-size: var(--text-lg);
+		font-weight: 750;
+	}
+
+	ul {
+		display: grid;
+		gap: var(--space-3);
+		margin: var(--space-5) 0 var(--space-6);
+		padding: 0;
+		list-style: none;
+	}
+
+	li {
+		position: relative;
+		padding-left: 1.5rem;
+		color: var(--color-ink-soft);
+	}
+
+	li::before {
+		position: absolute;
+		top: 0.05em;
+		left: 0;
+		color: var(--color-success);
+		font-weight: 800;
+		content: "✓";
+	}
+
+	.package-card__action {
+		width: 100%;
+		margin-top: auto;
+	}
+
+	.package-card__note {
+		margin: var(--space-3) 0 0;
+		color: var(--color-muted);
+		font-size: var(--text-xs);
+		line-height: 1.5;
+	}
+</style>

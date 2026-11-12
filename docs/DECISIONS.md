@@ -1,5 +1,32 @@
 # Technical Decisions (ADR ringkas)
 
+## ADR-039 — Paket CCTV ditranskripsikan dari brosur pemilik
+
+**Status:** diterima sementara (Phase 10, 2026-11-12)
+
+**Konteks:** Pemilik memberikan brosur penawaran yang memuat kamera satuan, 6 paket CCTV, dan paket solar panel. Pemilik meminta hanya penawaran CCTV paketan ditampilkan.
+
+**Keputusan:** Tampilkan 6 paket CCTV statis dari brosur pada beranda. Kamera satuan dan paket solar panel dikecualikan. Nama merek, jumlah kamera, teknologi, resolusi, harga, komponen, serta status jasa pasang hanya ditulis bila terbaca jelas; kode model yang kabur tidak ditebak. CTA tetap nonaktif sampai kanal kontak dikonfigurasi.
+
+**Konsekuensi:**
+- Beranda menampilkan data penawaran dari sumber pemilik, bukan data DEMO karangan.
+- Harga mengikuti brosur dan tetap perlu dikonfirmasi; lima paket diberi catatan jasa pasang mengikuti kondisi lapangan, sedangkan paket Uniview ditandai termasuk jasa pasang sesuai brosur.
+- Data masih berada di kode. Migrasi ke collection CMS diperlukan agar perubahan harga dan isi paket tidak memerlukan deploy.
+- Tidak ada checkout atau klaim keberhasilan transaksi.
+
+## ADR-038 — Shell publik memakai aset logo yang diberikan
+
+**Status:** diterima (Phase 10, 2026-11-12)
+
+**Konteks:** Pemilik memberikan `public/LOGO ASATECH.png` dan meminta aset tersebut dipakai di header serta footer. Shell sebelumnya memakai wordmark placeholder atau logo dari Site Settings.
+
+**Keputusan:** `Logo.astro` memakai aset tersebut secara langsung pada kedua lokasi, dengan alt mengikuti judul situs, dimensi intrinsik 2000×800, dan ukuran tampilan responsif. Nama file dipertahankan; URL spasi ditulis sebagai `%20`.
+
+**Konsekuensi:**
+- Header dan footer memakai identitas visual yang sama tanpa duplikasi markup.
+- Penggantian logo melalui Site Settings tidak lagi mengubah logo shell sampai strategi prioritas aset diputuskan ulang.
+- Rasio intrinsik mencegah layout shift; file PNG asli tetap dikirim tanpa pipeline optimasi Astro karena berada di `public/`.
+
 ## ADR-037 — Katalog merek memakai sisi balik relasi produk
 
 **Status:** diterima (Phase 10, 2026-11-09)

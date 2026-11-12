@@ -5,6 +5,7 @@ import Container from "../components/Container.astro";
 import EmptyState from "../components/EmptyState.astro";
 import BrandTile from "../components/BrandTile.astro";
 import CategoryTile from "../components/CategoryTile.astro";
+import CctvPackageCard from "../components/CctvPackageCard.astro";
 import ProductGrid from "../components/ProductGrid.astro";
 import PostGrid from "../components/PostGrid.astro";
 import SectionHead from "../components/SectionHead.astro";
@@ -84,6 +85,77 @@ if (brandsResult.error) {
 }
 if (Astro.cache.enabled) Astro.cache.set(brandsResult.cacheHint);
 const brands = brandsResult.entries;
+
+// Data penawaran ditranskripsikan dari brosur pemilik pada 2026-11-12.
+// Hanya informasi yang terbaca jelas yang ditampilkan; kode model tidak ditebak.
+const cctvPackages = [
+	{
+		name: "Hikvision — 4 Kamera Analog 2 MP",
+		description: "Cocok untuk rumahan, toko, ruko, kantor, atau pergudangan.",
+		price: 5_231_000,
+		items: [
+			"DVR 4 channel",
+			"4 kamera Turbo HD 2 MP indoor/outdoor",
+			"PSU dan HDD 500 GB",
+			"Kabel coaxial 50 m, BNC, dan power",
+		],
+	},
+	{
+		name: "Hikvision ColorVu — 4 Kamera Audio Analog 5 MP",
+		description: "Cocok untuk rumahan, toko, ruko, kantor, atau ruang malam berwarna.",
+		price: 6_540_000,
+		items: [
+			"DVR 4 channel",
+			"4 kamera audio 5 MP indoor/outdoor",
+			"PSU dan HDD 500 GB",
+			"Kabel coaxial 50 m, BNC, dan power",
+		],
+	},
+	{
+		name: "Dahua — 6 Kamera Audio Analog 5 MP",
+		description: "Cocok untuk rumahan, toko, ruko, kantor, atau pergudangan.",
+		price: 6_500_000,
+		items: [
+			"DVR HDCVI 8 channel",
+			"6 kamera audio 5 MP indoor/outdoor",
+			"PSU 8 channel dan HDD 500 GB",
+			"Kabel coaxial 50 m, BNC, dan power",
+		],
+	},
+	{
+		name: "Uniview — 4 Kamera Audio Analog 2 MP",
+		description: "Cocok untuk rumahan, toko, ruko, atau kantor.",
+		price: 3_800_000,
+		items: [
+			"4 kamera audio 2 MP indoor/outdoor",
+			"PSU dan HDD 500 GB",
+			"Kabel coaxial 50 m, BNC, dan power",
+		],
+		installationIncluded: true,
+	},
+	{
+		name: "HiLook — 4 Kamera Analog 2 MP",
+		description: "Cocok untuk rumahan, toko, ruko, kantor, atau pergudangan.",
+		price: 3_100_000,
+		items: [
+			"DVR 4 channel",
+			"4 kamera 2 MP 1080p indoor/outdoor",
+			"PSU dan HDD 500 GB",
+			"Kabel coaxial 50 m, BNC, dan power",
+		],
+	},
+	{
+		name: "Hikvision — 4 Kamera IP 2 MP",
+		description: "Cocok untuk rumahan, toko, ruko, kantor, pergudangan, atau jaringan komputer.",
+		price: 8_623_000,
+		items: [
+			"NVR 8 channel PoE",
+			"4 kamera IP 2 MP audio indoor/outdoor",
+			"HDD 500 GB",
+			"Kabel LAN Cat 6 sepanjang 50 m dan RJ45",
+		],
+	},
+];
 
 const { siteTitle, siteTagline } = resolveStarterSiteIdentity(
 	await getSiteSettings(),
@@ -166,6 +238,23 @@ const { siteTitle, siteTagline } = resolveStarterSiteIdentity(
 			</section>
 		)
 	}
+
+	<section class="section section--subtle" aria-labelledby="cctv-packages-title">
+		<Container>
+			<SectionHead
+				title="Paket pemasangan CCTV"
+				lead="Pilihan paket CCTV analog dan IP. Harga serta cakupan pemasangan wajib dikonfirmasi sesuai kondisi lapangan."
+				id="cctv-packages-title"
+			/>
+			<ul class="package-grid">
+				{cctvPackages.map((packageItem) => (
+					<li>
+						<CctvPackageCard {...packageItem} />
+					</li>
+				))}
+			</ul>
+		</Container>
+	</section>
 
 	<section class="section" aria-labelledby="new-products-title">
 		<Container>
@@ -385,7 +474,8 @@ const { siteTitle, siteTagline } = resolveStarterSiteIdentity(
 	}
 
 	.brand-grid,
-	.category-grid {
+	.category-grid,
+	.package-grid {
 		display: grid;
 		grid-template-columns: repeat(2, minmax(0, 1fr));
 		gap: var(--space-3);
@@ -395,13 +485,20 @@ const { siteTitle, siteTagline } = resolveStarterSiteIdentity(
 	}
 
 	.brand-grid > li,
-	.category-grid > li {
+	.category-grid > li,
+	.package-grid > li {
 		display: flex;
 	}
 
 	.brand-grid > li > :global(*),
-	.category-grid > li > :global(*) {
+	.category-grid > li > :global(*),
+	.package-grid > li > :global(*) {
 		flex: 1;
+	}
+
+	.package-grid {
+		grid-template-columns: minmax(0, 1fr);
+		gap: var(--space-5);
 	}
 
 	.section--subtle {
@@ -417,6 +514,12 @@ const { siteTitle, siteTagline } = resolveStarterSiteIdentity(
 
 		.category-grid {
 			grid-template-columns: repeat(4, minmax(0, 1fr));
+		}
+	}
+
+	@media (min-width: 48rem) {
+		.package-grid {
+			grid-template-columns: repeat(3, minmax(0, 1fr));
 		}
 	}
 

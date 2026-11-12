@@ -50,8 +50,7 @@ const {
 const { data: settings, cacheHint } = await getSiteSettingsWithCacheHint();
 if (Astro.cache?.enabled) Astro.cache.set(cacheHint);
 
-const { siteTitle, siteTagline, siteLogo } =
-	resolveStarterSiteIdentity(settings);
+const { siteTitle, siteTagline } = resolveStarterSiteIdentity(settings);
 
 const siteOrigin = resolveSiteOrigin({
 	url: Astro.url,
@@ -115,7 +114,6 @@ const pageCtx = createPublicPageContext({
 		<SiteHeader
 			siteTitle={siteTitle}
 			siteTagline={siteTagline}
-			siteLogo={siteLogo}
 			searchCollections={["products", "posts", "pages"]}
 		/>
 
@@ -126,7 +124,6 @@ const pageCtx = createPublicPageContext({
 		<SiteFooter
 			siteTitle={siteTitle}
 			siteTagline={siteTagline}
-			siteLogo={siteLogo}
 		/>
 
 		<EmDashBodyEnd page={pageCtx} />
